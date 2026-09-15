@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Terms of use",
+  description:
+    "Terms for using Every Hue personal color analysis, wardrobe tools, and AI stylist features.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

@@ -2,8 +2,17 @@ import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import { auth, signOut } from "@/auth";
 import { BrandLogo } from "@/components/brand-logo";
+import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
+import {
+  buildMetadata,
+  getSiteUrl,
+  organizationJsonLd,
+  siteConfig,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -17,12 +26,35 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Every Hue — Personal Color Analysis",
-  description:
-    "Find the hues that belong with you. Seasonal color analysis and wardrobe palettes for everyone.",
+  metadataBase: new URL(getSiteUrl()),
+  ...buildMetadata({
+    title: siteConfig.name,
+    description: siteConfig.description,
+    path: "/",
+  }),
+  title: {
+    default: `${siteConfig.name} — Personal Color Analysis`,
+    template: `%s | ${siteConfig.name}`,
+  },
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.name, url: getSiteUrl() }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  category: "lifestyle",
+  formatDetection: { telephone: false, email: false, address: false },
   icons: {
-    icon: "/favicon.png",
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png" }],
+    shortcut: "/favicon.png",
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.name,
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "theme-color": "#12141A",
   },
 };
 
@@ -48,6 +80,13 @@ export default async function RootLayout({
           } as React.CSSProperties
         }
       >
+        <JsonLd
+          data={[
+            organizationJsonLd(),
+            websiteJsonLd(),
+            softwareApplicationJsonLd(),
+          ]}
+        />
         <div className="site-shell">
           <header className="site-header">
             <div className="site-header-inner">

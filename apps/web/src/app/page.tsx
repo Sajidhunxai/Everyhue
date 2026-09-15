@@ -2,6 +2,39 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { BrandLogo } from "@/components/brand-logo";
 import { HeroVisual, ShowcaseVisual } from "@/components/hero-visual";
+import { JsonLd } from "@/components/json-ld";
+import { buildMetadata, faqJsonLd, siteConfig } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: siteConfig.name,
+  description: siteConfig.description,
+  path: "/",
+  keywords: ["color season", "cool undertone", "warm undertone", "personal stylist"],
+});
+
+const HOME_FAQS = [
+  {
+    question: "What is seasonal color analysis?",
+    answer:
+      "Seasonal color analysis matches your skin undertone and contrast to a color season (like Soft Autumn or Deep Winter) so clothes and makeup flatter you.",
+  },
+  {
+    question: "How does Every Hue analyze my photo?",
+    answer:
+      "You upload a daylight face photo. We sample colors in CIE Lab space, estimate undertone, and map you to a 12-season palette with wardrobe and shopping tips.",
+  },
+  {
+    question: "Do you store my photos?",
+    answer:
+      "Photos are processed for analysis. We do not sell your images. See our privacy policy for retention details and how to delete your account anytime.",
+  },
+  {
+    question: "Is this professional colorimetry?",
+    answer:
+      "Every Hue is for style education and entertainment. Results are estimates based on photo sampling — not a lab colorimeter or medical advice.",
+  },
+];
+
 const FEATURES = [
   {
     title: "Seasonal palette",
@@ -65,21 +98,6 @@ const STEPS = [
   },
 ] as const;
 
-const FAQ = [
-  {
-    q: "Do you store my photos?",
-    a: "Photos are processed for analysis. We do not sell your images. See our privacy policy for retention details.",
-  },
-  {
-    q: "Who is this for?",
-    a: "Everyone. Every Hue is designed to be inclusive — all skin tones, ages, and style preferences.",
-  },
-  {
-    q: "Do I need an account?",
-    a: "You can explore after signing in with Google. An account saves your analyses, wardrobe, and family profiles.",
-  },
-] as const;
-
 export default async function HomePage() {
   const session = await auth();
   const primaryHref = session ? "/analyze" : "/login";
@@ -87,6 +105,7 @@ export default async function HomePage() {
 
   return (
     <div className="landing">
+      <JsonLd data={faqJsonLd(HOME_FAQS)} />
       <section className="hero hero-split">
         <div className="hero-copy">
           <BrandLogo href="/" size="lg" className="hero-brand" />
@@ -195,10 +214,10 @@ export default async function HomePage() {
         <p className="section-kicker">FAQ</p>
         <h2>Common questions</h2>
         <div className="faq-list">
-          {FAQ.map((item) => (
-            <details key={item.q} className="faq-item">
-              <summary>{item.q}</summary>
-              <p>{item.a}</p>
+          {HOME_FAQS.map((item) => (
+            <details key={item.question} className="faq-item">
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
             </details>
           ))}
         </div>

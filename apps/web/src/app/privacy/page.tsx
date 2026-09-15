@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Privacy policy",
+  description:
+    "How Every Hue collects, uses, and deletes account data and photo analysis information.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (
