@@ -129,7 +129,7 @@ Until review is approved, only **Roles → Testers / Developers / Admins** can l
 ```
 AUTH_FACEBOOK_ID=<App ID>
 AUTH_FACEBOOK_SECRET=<App Secret>
-NEXT_PUBLIC_APP_URL=https://YOUR_DOMAIN
+AUTH_URL=https://YOUR_DOMAIN
 ```
 
 **Mobile / EAS production:**

@@ -9,19 +9,33 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
 
   const userId = session.user.id;
-  const [analysisCount, wardrobeCount, profileCount, latest] = await Promise.all([
-    prisma.analysis.count({ where: { userId } }),
-    prisma.wardrobeItem.count({ where: { userId } }),
-    prisma.familyProfile.count({ where: { userId } }),
-    prisma.analysis.findFirst({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  let analysisCount = 0;
+  let wardrobeCount = 0;
+  let profileCount = 0;
+  let latestSeason: string | null = null;
+  let dbError: string | null = null;
 
-  const latestSeason = latest
-    ? parseAnalysisJson(latest.resultJson).seasonLabel
-    : null;
+  try {
+    const [a, w, p, latest] = await Promise.all([
+      prisma.analysis.count({ where: { userId } }),
+      prisma.wardrobeItem.count({ where: { userId } }),
+      prisma.familyProfile.count({ where: { userId } }),
+      prisma.analysis.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+    analysisCount = a;
+    wardrobeCount = w;
+    profileCount = p;
+    latestSeason = latest
+      ? parseAnalysisJson(latest.resultJson).seasonLabel
+      : null;
+  } catch (e) {
+    console.error("[dashboard] database error", e);
+    dbError =
+      "Database connection failed. Check Vercel DATABASE_URL / DIRECT_URL (use Supabase pooler region ap-southeast-2), then redeploy.";
+  }
 
   const links = [
     {
@@ -83,11 +97,18 @@ export default async function DashboardPage() {
   const firstName = session.user.name?.split(" ")[0] ?? null;
 
   return (
-    <DashboardView
-      firstName={firstName}
-      image={session.user.image ?? null}
-      stats={{ analysisCount, wardrobeCount, profileCount, latestSeason }}
-      links={links}
-    />
+    <>
+      {dbError ? (
+        <p className="error" style={{ margin: "1rem 0" }}>
+          {dbError}
+        </p>
+      ) : null}
+      <DashboardView
+        firstName={firstName}
+        image={session.user.image ?? null}
+        stats={{ analysisCount, wardrobeCount, profileCount, latestSeason }}
+        links={links}
+      />
+    </>
   );
 }

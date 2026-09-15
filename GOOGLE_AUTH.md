@@ -4,7 +4,7 @@ Package: `com.asktheimageguru.everyhue`
 Domain: [asktheimageguru.com](https://asktheimageguru.com) (reverse-DNS package — required by Play / Google Sign-In)  
 Use this guide to go from local testing to a **live Play Store** build.
 
-Related: [FACEBOOK_AUTH.md](./FACEBOOK_AUTH.md) · [PLAY_STORE.md](./PLAY_STORE.md)
+Related: [GOOGLE_AUTH_WEB.md](./GOOGLE_AUTH_WEB.md) (web only) · [FACEBOOK_AUTH.md](./FACEBOOK_AUTH.md) · [PLAY_STORE.md](./PLAY_STORE.md) · [SUPABASE.md](./SUPABASE.md)
 
 ---
 
@@ -34,7 +34,7 @@ EXPO_PUBLIC_API_URL=https://YOUR_DOMAIN
 Use **Supabase Postgres** for the web app (see [SUPABASE.md](./SUPABASE.md)). Web Auth.js needs:
 
 ```
-NEXT_PUBLIC_APP_URL=https://YOUR_DOMAIN
+AUTH_URL=https://YOUR_DOMAIN
 AUTH_SECRET=<long random secret — openssl rand -base64 32>
 AUTH_TRUST_HOST=true
 AUTH_GOOGLE_ID=<Web client ID>

@@ -22,7 +22,7 @@ Auth setup (do these before / with store submit):
    - Set `EXPO_PUBLIC_API_URL=https://YOUR_DOMAIN` (EAS **production** env — not LAN HTTP).
    - Use **Supabase Postgres** (`DATABASE_URL` + `DIRECT_URL`) — see [SUPABASE.md](./SUPABASE.md).
    - Set a strong `AUTH_SECRET` (not the dev string).
-   - Set `NEXT_PUBLIC_APP_URL=https://YOUR_DOMAIN` on the web host (e.g. Vercel).
+   - Set `AUTH_URL=https://YOUR_DOMAIN` on the web host (e.g. Vercel).
 
 3. **Google OAuth for release builds**
    - Follow [GOOGLE_AUTH.md](./GOOGLE_AUTH.md) Part A.

@@ -80,7 +80,7 @@ pnpm dev:web
 ```
 DATABASE_URL=...   # pooler :6543
 DIRECT_URL=...     # :5432
-NEXT_PUBLIC_APP_URL=https://asktheimageguru.com
+AUTH_URL=https://asktheimageguru.com
 AUTH_SECRET=...
 AUTH_TRUST_HOST=true
 AUTH_GOOGLE_ID=...
@@ -118,6 +118,17 @@ EXPO_PUBLIC_API_URL=https://asktheimageguru.com
 | `Environment variable not found: DIRECT_URL` | Add `DIRECT_URL` next to `DATABASE_URL` |
 | Empty tables after deploy | Run `pnpm --filter @photomatcher/web db:push` with production URLs |
 | Old `file:./dev.db` in `.env.local` | Remove it — SQLite is no longer supported |
+| **`FATAL: tenant/user postgres.… not found`** (Vercel digest / dashboard crash) | Wrong pooler **region**. This project must use **`aws-0-ap-southeast-2`**. If Vercel still has `ap-southeast-1` or `db.…supabase.co`, replace both URLs and **Redeploy**. |
+
+### This project’s working hosts (copy into Vercel)
+
+```
+DATABASE_URL → …@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL   → …@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres
+```
+
+Username form: `postgres.vcjgwuwbdebqpxzzheaa` (project ref after `postgres.`).
+
 
 ---
 

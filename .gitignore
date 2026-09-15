@@ -13,6 +13,7 @@ apps/mobile/.env
 apps/flutter/.env
 apps/web/.env
 apps/web/.env.local
+apps/web/.env.vercel
 apps/web/prisma/dev.db
 apps/web/prisma/dev.db-journal
 coverage
