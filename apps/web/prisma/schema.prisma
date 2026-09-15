@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Direct (non-pooler) URL — required for prisma migrate / db push with Supabase
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String          @id
+  email        String?
+  name         String?
+  image        String?
+  passwordHash String?
+  createdAt    DateTime        @default(now())
+  analyses     Analysis[]
+  wardrobe     WardrobeItem[]
+  profiles     FamilyProfile[]
+  messages     ChatMessage[]
+
+  @@index([email])
+}
+
+model Analysis {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId  String?
+  profile    FamilyProfile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  resultJson String
+  faceShape  String?
+  bodyType   String?
+  createdAt  DateTime       @default(now())
+}
+
+model WardrobeItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hex       String
+  name      String
+  category  String
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model FamilyProfile {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  relation  String
+  analyses  Analysis[]
+  createdAt DateTime   @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}

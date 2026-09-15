@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "Every Hue",
+    "slug": "photomatcher",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "photomatcher",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#12141A"
+    },
+    "android": {
+      "package": "com.asktheimageguru.everyhue",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#12141A"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.asktheimageguru.everyhue",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.402320679068-611qsqok3a40h0msc6k7qe3k6vqr274v"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Every Hue samples colors from your photo to estimate a personal palette.",
+          "cameraPermission": "Every Hue uses the camera so you can capture a daylight face photo for color analysis.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "5555459a-b1b9-4398-9be8-19f4ad967faa"
+      },
+      "privacyPolicyUrl": "https://asktheimageguru.com/privacy"
+    }
+  }
+}

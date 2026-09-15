@@ -1,0 +1,24 @@
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+
+const KEYLEN = 64;
+
+/** Hash a password for storage (scrypt + salt). */
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, KEYLEN).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+/** Verify a password against a stored salt:hash value. */
+export function verifyPassword(password: string, stored: string): boolean {
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  const next = scryptSync(password, salt, KEYLEN);
+  const prev = Buffer.from(hash, "hex");
+  if (prev.length !== next.length) return false;
+  return timingSafeEqual(prev, next);
+}
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
