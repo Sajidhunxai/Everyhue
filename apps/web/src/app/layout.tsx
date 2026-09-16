@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import { auth, signOut } from "@/auth";
+import { AppProviders } from "@/components/app-providers";
 import { BrandLogo } from "@/components/brand-logo";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
@@ -87,6 +88,7 @@ export default async function RootLayout({
             softwareApplicationJsonLd(),
           ]}
         />
+        <AppProviders>
         <div className="site-shell">
           <header className="site-header">
             <div className="site-header-inner">
@@ -99,6 +101,7 @@ export default async function RootLayout({
 
           <SiteFooter />
         </div>
+        </AppProviders>
       </body>
     </html>
   );

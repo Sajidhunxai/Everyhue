@@ -49,6 +49,24 @@ const FEATURES = [
     swatches: ["#5A7FB8", "#F5F3F0", "#E07A7A", "#1C2028"],
   },
   {
+    title: "Palette match",
+    desc: "Score any hex or garment color against your season before you buy.",
+    href: "/match",
+    swatches: ["#7B9FD4", "#1C2028", "#E8A87C", "#F5F3F0"],
+  },
+  {
+    title: "Makeup & hair",
+    desc: "Lip, cheek, jewelry metal, and hair color hints for your undertone.",
+    href: "/beauty",
+    swatches: ["#E07A7A", "#E8A87C", "#B8A8C8", "#1C2028"],
+  },
+  {
+    title: "Saved looks",
+    desc: "Combine wardrobe colors into outfits scored against your palette.",
+    href: "/looks",
+    swatches: ["#12141A", "#7B9FD4", "#E8A87C", "#A8AEB8"],
+  },
+  {
     title: "Wardrobe & shop",
     desc: "Save colors you love and browse suit and accessory ideas in your palette.",
     href: "/wardrobe",
@@ -75,7 +93,7 @@ const FEATURES = [
   {
     title: "Export & share",
     desc: "Download a printable style card with palette swatches and quick tips.",
-    href: "/analyze",
+    href: "/results/print",
     swatches: ["#F5F3F0", "#7B9FD4", "#9BC4A8", "#12141A"],
   },
 ] as const;

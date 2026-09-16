@@ -3,13 +3,28 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { WardrobeItem } from "@photomatcher/types";
+import { useToast } from "@/components/toast";
+
+const CATEGORIES = [
+  "General",
+  "Palette",
+  "Suits",
+  "Shirts",
+  "Casual",
+  "Dresses",
+  "Outerwear",
+  "Shoes",
+  "Accessories",
+  "Makeup",
+] as const;
 
 export default function WardrobePage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [items, setItems] = useState<WardrobeItem[]>([]);
   const [hex, setHex] = useState("#E8A87C");
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("General");
+  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("General");
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -32,11 +47,15 @@ export default function WardrobePage() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!name.trim()) {
+      setError("Enter a name for this piece.");
+      return;
+    }
     const res = await fetch("/api/wardrobe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ hex, name, category }),
+      body: JSON.stringify({ hex, name: name.trim(), category }),
     });
     if (res.status === 401) {
       router.push("/login");
@@ -44,18 +63,23 @@ export default function WardrobePage() {
     }
     if (!res.ok) {
       setError("Could not add item");
+      toast("Could not add item", "error");
       return;
     }
     setName("");
+    toast("Added to wardrobe");
     void load();
   }
 
   async function remove(id: string) {
-    await fetch(`/api/wardrobe?id=${id}`, {
+    const res = await fetch(`/api/wardrobe?id=${id}`, {
       method: "DELETE",
       credentials: "include",
     });
-    void load();
+    if (res.ok) {
+      toast("Item removed");
+      void load();
+    }
   }
 
   return (
@@ -69,11 +93,23 @@ export default function WardrobePage() {
         </label>
         <label>
           Name
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            maxLength={80}
+            placeholder="Navy blazer"
+          />
         </label>
         <label>
           Category
-          <input value={category} onChange={(e) => setCategory(e.target.value)} />
+          <select value={category} onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}>
+            {CATEGORIES.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
         <button className="btn btn-primary" type="submit">
           Add item

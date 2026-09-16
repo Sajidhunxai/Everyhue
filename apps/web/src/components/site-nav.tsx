@@ -7,12 +7,15 @@ import { useEffect, useState } from "react";
 const NAV_LINKS = [
   { href: "/analyze", label: "Analyze" },
   { href: "/compare", label: "Compare" },
+  { href: "/match", label: "Match" },
   { href: "/shop", label: "Shop" },
   { href: "/wardrobe", label: "Wardrobe" },
   { href: "/dashboard", label: "Dashboard" },
 ] as const;
 
 const MORE_LINKS = [
+  { href: "/beauty", label: "Makeup & hair" },
+  { href: "/looks", label: "Looks" },
   { href: "/quiz", label: "Style quiz" },
   { href: "/profiles", label: "Family" },
   { href: "/stylist", label: "Stylist" },
@@ -59,6 +62,16 @@ export function SiteNav({ user, signOutAction }: Props) {
             {link.label}
           </Link>
         ))}
+        <details className="nav-more">
+          <summary className="nav-link">More</summary>
+          <div className="nav-more-menu">
+            {MORE_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className={navClass(link.href)}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </details>
       </nav>
 
       <div className="nav-actions">

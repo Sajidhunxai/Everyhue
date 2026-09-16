@@ -79,10 +79,8 @@ export default function StylistScreen() {
       <Text style={styles.title}>Stylist</Text>
       <Text style={styles.lead}>
         {chatMode === "ai"
-          ? "Powered by AI via your Every Hue server."
-          : chatMode === "rules"
-            ? "Using built-in rules — ensure web server is running with OPENAI_API_KEY."
-            : "Answers use your last analysis when available."}
+          ? "Answers use your palette and chat history."
+          : "Ask about jewelry, suits, casual wear, or what to wear for an occasion."}
       </Text>
       {messages.map((m, i) => (
         <View key={`${m.role}-${i}`} style={m.role === "user" ? styles.userBubble : styles.botBubble}>

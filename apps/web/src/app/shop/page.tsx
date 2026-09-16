@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AnalyzeResult, ShopItem } from "@photomatcher/types";
+import { loadLastResult } from "@/lib/last-result";
 
 export default function ShopPage() {
   const [result, setResult] = useState<AnalyzeResult | null>(null);
@@ -10,9 +11,8 @@ export default function ShopPage() {
   const [category, setCategory] = useState("");
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("photomatcher:lastResult");
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as AnalyzeResult;
+    const parsed = loadLastResult();
+    if (!parsed) return;
     setResult(parsed);
     const params = new URLSearchParams({ seasonId: parsed.seasonId });
     if (category) params.set("category", category);
@@ -39,7 +39,7 @@ export default function ShopPage() {
       <p className="lead">
         Curated ideas for {result.seasonLabel}. Use search terms to find similar items online.
       </p>
-      <label>
+      <label className="form-grid" style={{ maxWidth: "16rem" }}>
         Category
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">All</option>

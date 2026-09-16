@@ -31,13 +31,42 @@ export type ComparePhotoInput = {
   samples: { L: number; a: number; b: number }[];
 };
 
+export type ComparePhotoSummary = {
+  label: string;
+  undertoneHint: string;
+  brightness: string;
+  score: number;
+};
+
 export type CompareResult = {
   lightingScore: number;
   consistencyScore: number;
   recommendation: string;
-  photoA: { label: string; undertoneHint: string; brightness: string };
-  photoB: { label: string; undertoneHint: string; brightness: string };
+  photoA: ComparePhotoSummary;
+  photoB: ComparePhotoSummary;
   betterPhoto: "A" | "B" | "tie";
+  lightingTips: string[];
+};
+
+export type PaletteMatchVerdict = "excellent" | "good" | "fair" | "poor" | "avoid";
+
+export type PaletteMatch = {
+  hex: string;
+  score: number;
+  verdict: PaletteMatchVerdict;
+  deltaE: number;
+  closest: PaletteSwatch;
+  nearestAvoid: PaletteSwatch | null;
+};
+
+export type SavedLook = {
+  id: string;
+  name: string;
+  occasion: string;
+  hexes: string[];
+  itemIds: string[];
+  score: number | null;
+  createdAt: string;
 };
 
 export type ShopItem = {

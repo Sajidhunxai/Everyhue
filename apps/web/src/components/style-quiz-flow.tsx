@@ -9,6 +9,7 @@ import {
 import type { AnalyzeResult, StyleQuizAnswers, StyleQuizPayload, StyleQuizResult } from "@photomatcher/types";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useToast } from "@/components/toast";
 
 const STORAGE_KEY = "photomatcher:styleQuiz";
 
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function StyleQuizFlow({ analysis }: Props) {
+  const { toast } = useToast();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<StyleQuizAnswers>(emptyStyleQuizAnswers());
   const [done, setDone] = useState<StyleQuizResult | null>(null);
@@ -58,6 +60,7 @@ export function StyleQuizFlow({ analysis }: Props) {
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     setDone(result);
+    toast("Style quiz complete");
   }
 
   function next() {

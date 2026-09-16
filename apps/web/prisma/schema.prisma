@@ -21,7 +21,21 @@ model User {
   profiles     FamilyProfile[]
   messages     ChatMessage[]
 
+  looks          SavedLook[]
+
   @@index([email])
+}
+
+model SavedLook {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  occasion  String
+  hexes     String
+  itemIds   String
+  score     Int?
+  createdAt DateTime @default(now())
 }
 
 model Analysis {

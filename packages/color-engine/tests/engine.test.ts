@@ -12,6 +12,7 @@ import {
 } from "../src/photo-validation";
 import { stylistReply } from "../src/stylist-chat";
 import { ENGINE_VERSION, matchSeason, srgbToLab } from "../src/index";
+import { scoreHexAgainstPalette, scoreLookAgainstPalette } from "../src/palette-match";
 
 describe("srgbToLab", () => {
   it("converts mid grey roughly to L~53 a~0 b~0", () => {
@@ -60,6 +61,9 @@ describe("comparePhotos", () => {
     const result = comparePhotos({ label: "A", samples: a }, { label: "B", samples: b });
     expect(result.lightingScore).toBeGreaterThan(0);
     expect(result.recommendation.length).toBeGreaterThan(0);
+    expect(result.betterPhoto).toBe("A");
+    expect(result.lightingTips.length).toBeGreaterThan(0);
+    expect(result.photoA.score).toBeGreaterThan(result.photoB.score);
   });
 });
 
@@ -174,5 +178,21 @@ describe("style quiz", () => {
     expect(result.outfitIdeas.length).toBeGreaterThan(0);
     expect(result.shoppingList.length).toBeGreaterThan(0);
     expect(result.suitPicks[0]?.detail.toLowerCase()).toMatch(/suit|blazer|neutral/);
+  });
+});
+
+describe("palette match", () => {
+  it("scores a palette hex highly and flags a far avoid color", () => {
+    const palette = [
+      { hex: "#7B9FD4", name: "Sky" },
+      { hex: "#F2D6C9", name: "Blush" },
+    ];
+    const avoid = [{ hex: "#F5C518", name: "Mustard" }];
+    const good = scoreHexAgainstPalette("#7B9FD4", palette, avoid);
+    const clash = scoreHexAgainstPalette("#F5C518", palette, avoid);
+    expect(good?.verdict).toBe("excellent");
+    expect(good?.score).toBeGreaterThanOrEqual(85);
+    expect(clash?.verdict).toBe("avoid");
+    expect(scoreLookAgainstPalette(["#7B9FD4", "#F2D6C9"], palette, avoid)).toBeGreaterThan(70);
   });
 });

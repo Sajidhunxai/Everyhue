@@ -4,13 +4,14 @@ import type { AnalyzeResult } from "@photomatcher/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { StyleQuizFlow } from "@/components/style-quiz-flow";
+import { loadLastResult } from "@/lib/last-result";
 
 export default function QuizPage() {
   const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("photomatcher:lastResult");
-    if (raw) setAnalysis(JSON.parse(raw) as AnalyzeResult);
+    const stored = loadLastResult();
+    if (stored) setAnalysis(stored);
   }, []);
 
   if (!analysis) {

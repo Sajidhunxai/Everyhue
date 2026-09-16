@@ -4,23 +4,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AnalyzeResult } from "@photomatcher/types";
 import { ResultsDisplay } from "@/components/results-display";
+import { loadLastResult, saveLastResult } from "@/lib/last-result";
+import { useToast } from "@/components/toast";
 
 export default function ResultsPage() {
+  const { toast } = useToast();
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      const raw = sessionStorage.getItem("photomatcher:lastResult");
-      if (raw) {
-        try {
-          setResult(JSON.parse(raw) as AnalyzeResult);
-          setLoading(false);
-          return;
-        } catch {
-          /* fall through */
-        }
+      const stored = loadLastResult();
+      if (stored) {
+        setResult(stored);
+        setLoading(false);
+        return;
       }
       try {
         const res = await fetch("/api/analyses", { credentials: "include" });
@@ -28,10 +26,7 @@ export default function ResultsPage() {
           const rows = (await res.json()) as { result: AnalyzeResult }[];
           if (rows[0]?.result) {
             setResult(rows[0].result);
-            sessionStorage.setItem(
-              "photomatcher:lastResult",
-              JSON.stringify(rows[0].result),
-            );
+            saveLastResult(rows[0].result);
           }
         }
       } finally {
@@ -42,7 +37,6 @@ export default function ResultsPage() {
   }, []);
 
   async function saveToWardrobe(hex: string, name: string) {
-    setSaveMsg(null);
     const res = await fetch("/api/wardrobe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -50,10 +44,27 @@ export default function ResultsPage() {
       body: JSON.stringify({ hex, name, category: "Palette" }),
     });
     if (!res.ok) {
-      setSaveMsg(res.status === 401 ? "Sign in to save colors." : "Could not save.");
+      toast(res.status === 401 ? "Sign in to save colors." : "Could not save.", "error");
       return;
     }
-    setSaveMsg(`Saved ${name} to wardrobe`);
+    toast(`Saved ${name} to wardrobe`);
+  }
+
+  async function shareCard() {
+    if (!result) return;
+    const text = `My Every Hue season is ${result.seasonLabel} (${result.undertone} undertone). Palette: ${result.palette.map((s) => s.name).join(", ")}.`;
+    const url = `${window.location.origin}/results`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Every Hue style card", text, url });
+        toast("Shared style card");
+        return;
+      }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      toast("Style card copied");
+    } catch {
+      toast("Share canceled", "info");
+    }
   }
 
   if (loading) {
@@ -80,12 +91,20 @@ export default function ResultsPage() {
       <p className="muted">Engine {result.engine_version}</p>
       <h1>{result.seasonLabel}</h1>
       <ResultsDisplay result={result} />
-      {saveMsg ? <p className="lead">{saveMsg}</p> : null}
       <div className="actions" style={{ marginTop: "1.5rem" }}>
         <Link className="btn btn-primary" href="/shop">
           Shop my palette
         </Link>
-        <Link className="btn btn-primary" href="/quiz">
+        <Link className="btn btn-primary" href="/beauty">
+          Makeup &amp; hair
+        </Link>
+        <Link className="btn btn-secondary" href="/match">
+          Match a color
+        </Link>
+        <Link className="btn btn-secondary" href="/looks">
+          Save a look
+        </Link>
+        <Link className="btn btn-secondary" href="/quiz">
           Take style quiz
         </Link>
         <Link className="btn btn-secondary" href="/stylist">
@@ -94,12 +113,15 @@ export default function ResultsPage() {
         <Link className="btn btn-secondary" href="/results/print">
           Print / Save PDF
         </Link>
+        <button className="btn btn-secondary" type="button" onClick={() => void shareCard()}>
+          Share style card
+        </button>
         <button
           className="btn btn-secondary"
           type="button"
           onClick={() =>
             result.palette[0] &&
-            saveToWardrobe(result.palette[0].hex, result.palette[0].name)
+            void saveToWardrobe(result.palette[0].hex, result.palette[0].name)
           }
         >
           Save top color

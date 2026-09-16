@@ -67,6 +67,17 @@ export function comparePhotos(a: ComparePhotoInput, b: ComparePhotoInput): Compa
       " Large difference detected — lighting or white balance changed between shots.";
   }
 
+  const lightingTips = [
+    "Stand facing a window — no direct sun on the face.",
+    "Turn off yellow indoor lamps so white balance stays honest.",
+    "Keep makeup light and skip filters or beauty modes.",
+    "Show face and shoulders; hair off the forehead.",
+    "Retake if one side of the face is much brighter than the other.",
+  ];
+  if (Math.min(lightingScoreA, lightingScoreB) < 50) {
+    lightingTips.unshift("At least one photo is too dark or uneven — retake in daylight.");
+  }
+
   return {
     lightingScore,
     consistencyScore,
@@ -75,12 +86,15 @@ export function comparePhotos(a: ComparePhotoInput, b: ComparePhotoInput): Compa
       label: a.label,
       undertoneHint: undertoneHint(labA),
       brightness: brightnessLabel(labA.L),
+      score: Math.round(lightingScoreA),
     },
     photoB: {
       label: b.label,
       undertoneHint: undertoneHint(labB),
       brightness: brightnessLabel(labB.L),
+      score: Math.round(lightingScoreB),
     },
     betterPhoto,
+    lightingTips,
   };
 }

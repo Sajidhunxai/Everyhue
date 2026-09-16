@@ -3,6 +3,7 @@
 import type { AnalyzeResult } from "@photomatcher/types";
 
 function BulletList({ items }: { items: string[] }) {
+  if (!items.length) return null;
   return (
     <ul className="guide-list">
       {items.map((item) => (
@@ -13,6 +14,7 @@ function BulletList({ items }: { items: string[] }) {
 }
 
 function TagRow({ items }: { items: string[] }) {
+  if (!items.length) return null;
   return (
     <div className="tag-row">
       {items.map((item) => (
@@ -24,9 +26,42 @@ function TagRow({ items }: { items: string[] }) {
   );
 }
 
-export function ResultsDisplay({ result }: { result: AnalyzeResult }) {
+type Props = {
+  result: AnalyzeResult;
+  beautyOnly?: boolean;
+};
+
+export function ResultsDisplay({ result, beautyOnly = false }: Props) {
   const guide = result.styleGuide;
   if (!guide) return <p className="lead">Style guide unavailable — run a new analysis.</p>;
+
+  const beauty = (
+    <>
+      <h2>Makeup</h2>
+      <div className="guide-grid">
+        <div>
+          <h3>Lips</h3>
+          <TagRow items={guide.makeup.lips} />
+        </div>
+        <div>
+          <h3>Cheeks</h3>
+          <TagRow items={guide.makeup.cheeks} />
+        </div>
+        <div>
+          <h3>Eyes</h3>
+          <TagRow items={guide.makeup.eyes} />
+        </div>
+      </div>
+      <h2>Jewelry</h2>
+      <TagRow items={guide.jewelry} />
+      <h2>Hair color hints</h2>
+      <BulletList items={guide.hairColorHints} />
+      <h2>Patterns &amp; neutrals</h2>
+      <TagRow items={[...guide.patterns, ...guide.neutrals]} />
+    </>
+  );
+
+  if (beautyOnly) return beauty;
 
   return (
     <>
@@ -45,6 +80,13 @@ export function ResultsDisplay({ result }: { result: AnalyzeResult }) {
         ))}
       </div>
 
+      {result.tips?.length ? (
+        <>
+          <h2>Quick tips</h2>
+          <BulletList items={result.tips} />
+        </>
+      ) : null}
+
       {result.faceBodyTips ? (
         <>
           <h2>Face &amp; body styling</h2>
@@ -62,23 +104,11 @@ export function ResultsDisplay({ result }: { result: AnalyzeResult }) {
 
       <h2>Suits &amp; formal wear</h2>
       <BulletList items={guide.suits} />
+      <h2>Shirts &amp; blouses</h2>
+      <BulletList items={guide.shirtsAndBlouses} />
       <h2>Casual &amp; everyday</h2>
       <BulletList items={guide.casualWear} />
-      <h2>Makeup</h2>
-      <div className="guide-grid">
-        <div>
-          <h3>Lips</h3>
-          <TagRow items={guide.makeup.lips} />
-        </div>
-        <div>
-          <h3>Cheeks</h3>
-          <TagRow items={guide.makeup.cheeks} />
-        </div>
-        <div>
-          <h3>Eyes</h3>
-          <TagRow items={guide.makeup.eyes} />
-        </div>
-      </div>
+      {beauty}
       <h2>Occasion outfits</h2>
       <div className="occasion-list">
         {guide.occasions.map((o) => (

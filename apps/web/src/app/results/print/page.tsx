@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import type { AnalyzeResult } from "@photomatcher/types";
 import { ResultsDisplay } from "@/components/results-display";
+import { loadLastResult } from "@/lib/last-result";
 
 export default function PrintResultsPage() {
   const [result, setResult] = useState<AnalyzeResult | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("photomatcher:lastResult");
-    if (raw) setResult(JSON.parse(raw) as AnalyzeResult);
+    setResult(loadLastResult());
   }, []);
 
   useEffect(() => {

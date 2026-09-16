@@ -4,8 +4,11 @@ import { BrandLogo } from "@/components/brand-logo";
 const FEATURE_LINKS = [
   { href: "/analyze", label: "Color analysis" },
   { href: "/compare", label: "Compare photos" },
+  { href: "/match", label: "Palette match" },
+  { href: "/beauty", label: "Makeup & hair" },
   { href: "/shop", label: "Shop by season" },
   { href: "/wardrobe", label: "Wardrobe" },
+  { href: "/looks", label: "Saved looks" },
   { href: "/profiles", label: "Family profiles" },
   { href: "/stylist", label: "AI stylist" },
   { href: "/quiz", label: "Style quiz" },

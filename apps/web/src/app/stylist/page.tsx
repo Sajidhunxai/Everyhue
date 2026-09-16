@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import type { AnalyzeResult, StylistMessage } from "@photomatcher/types";
+import { useToast } from "@/components/toast";
+import { loadLastResult } from "@/lib/last-result";
 
 export default function StylistPage() {
+  const { toast } = useToast();
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [messages, setMessages] = useState<StylistMessage[]>([]);
   const [input, setInput] = useState("");
@@ -11,8 +14,7 @@ export default function StylistPage() {
   const [chatMode, setChatMode] = useState<"ai" | "rules" | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("photomatcher:lastResult");
-    if (raw) setResult(JSON.parse(raw) as AnalyzeResult);
+    setResult(loadLastResult());
     fetch("/api/stylist")
       .then((r) => (r.ok ? r.json() : []))
       .then(setMessages);
@@ -20,7 +22,10 @@ export default function StylistPage() {
 
   async function clearChat() {
     const res = await fetch("/api/stylist", { method: "DELETE" });
-    if (res.ok) setMessages([]);
+    if (res.ok) {
+      setMessages([]);
+      toast("Chat cleared");
+    }
   }
 
   async function send(e: React.FormEvent) {
@@ -50,6 +55,9 @@ export default function StylistPage() {
           { role: "assistant", content: reply, createdAt: new Date().toISOString() },
         ]);
         setInput("");
+        toast("Reply received");
+      } else {
+        toast("Could not send message", "error");
       }
     } finally {
       setBusy(false);
@@ -71,10 +79,8 @@ export default function StylistPage() {
       <p className="lead">Ask about suits, casual wear, makeup, or jewelry for {result.seasonLabel}.</p>
       <p className="muted" style={{ fontSize: "0.85rem", marginTop: "-0.5rem" }}>
         {chatMode === "ai"
-          ? "Powered by AI — answers use your palette and chat history."
-          : chatMode === "rules"
-            ? "Using built-in stylist rules. Add OPENAI_API_KEY to apps/web/.env.local for smarter chat."
-            : "Add OPENAI_API_KEY to apps/web/.env.local for AI chat, or use keyword questions like jewelry, suits, casual wear."}
+          ? "Answers use your palette and chat history."
+          : "Try questions about jewelry, suits, casual wear, or what to wear for an occasion."}
       </p>
       <div className="chat-box">
         {messages.map((m, i) => (

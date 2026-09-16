@@ -4,11 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import type { AnalyzeResult, BodyType, FaceShape } from "@photomatcher/types";
 import { samplesFromImageFile } from "@/lib/image-samples";
+import { saveLastResult } from "@/lib/last-result";
+import { useToast } from "@/components/toast";
 
 type FamilyProfileOption = { id: string; name: string; relation: string };
 
 function AnalyzeForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +69,13 @@ function AnalyzeForm() {
         throw new Error(message);
       }
       const data = (await res.json()) as AnalyzeResult;
-      sessionStorage.setItem("photomatcher:lastResult", JSON.stringify(data));
+      saveLastResult(data);
+      toast("Analysis ready");
       router.push("/results");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      const message = e instanceof Error ? e.message : "Something went wrong";
+      setError(message);
+      toast(message, "error");
     } finally {
       setBusy(false);
     }

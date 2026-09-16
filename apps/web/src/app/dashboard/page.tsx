@@ -51,6 +51,24 @@ export default async function DashboardPage() {
       icon: "⇄",
     },
     {
+      href: "/match",
+      title: "Palette match",
+      desc: "Score any hex or garment color against your season",
+      icon: "▣",
+    },
+    {
+      href: "/beauty",
+      title: "Makeup & hair",
+      desc: "Lips, jewelry metals, and hair color hints",
+      icon: "◈",
+    },
+    {
+      href: "/looks",
+      title: "Saved looks",
+      desc: "Build outfits from wardrobe colors",
+      icon: "✦",
+    },
+    {
       href: "/shop",
       title: "Shop my palette",
       desc: "Suits, shirts, and accessories in your colors",

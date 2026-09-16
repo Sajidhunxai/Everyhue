@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FamilyProfile } from "@photomatcher/types";
+import { useToast } from "@/components/toast";
+
+const RELATIONS = ["Partner", "Child", "Parent", "Sibling", "Friend", "Other"] as const;
 
 type ProfileRow = FamilyProfile & {
   lastAnalysis?: { id: string; result: FamilyProfile["lastAnalysis"]; createdAt: string } | null;
 };
 
 export default function ProfilesPage() {
+  const { toast } = useToast();
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [name, setName] = useState("");
-  const [relation, setRelation] = useState("Partner");
+  const [relation, setRelation] = useState<(typeof RELATIONS)[number]>("Partner");
 
   async function load() {
     const res = await fetch("/api/profiles");
@@ -24,18 +28,26 @@ export default function ProfilesPage() {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    await fetch("/api/profiles", {
+    const res = await fetch("/api/profiles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, relation }),
+      body: JSON.stringify({ name: name.trim(), relation }),
     });
+    if (!res.ok) {
+      toast("Could not add profile", "error");
+      return;
+    }
     setName("");
+    toast("Profile added");
     void load();
   }
 
   async function remove(id: string) {
-    await fetch(`/api/profiles?id=${id}`, { method: "DELETE" });
-    void load();
+    const res = await fetch(`/api/profiles?id=${id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast("Profile deleted");
+      void load();
+    }
   }
 
   return (
@@ -49,7 +61,13 @@ export default function ProfilesPage() {
         </label>
         <label>
           Relation
-          <input value={relation} onChange={(e) => setRelation(e.target.value)} />
+          <select value={relation} onChange={(e) => setRelation(e.target.value as (typeof RELATIONS)[number])}>
+            {RELATIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
         <button className="btn btn-primary" type="submit">
           Add profile
