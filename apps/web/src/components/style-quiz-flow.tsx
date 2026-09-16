@@ -6,7 +6,7 @@ import {
   emptyStyleQuizAnswers,
   isStyleQuizComplete,
 } from "@photomatcher/color-engine";
-import type { AnalyzeResult, StyleQuizAnswers, StyleQuizPayload } from "@photomatcher/types";
+import type { AnalyzeResult, StyleQuizAnswers, StyleQuizPayload, QuizTemplate } from "@photomatcher/types";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/toast";
@@ -22,7 +22,7 @@ type Props = {
   analysis: AnalyzeResult;
 };
 
-type Screen = "gate" | "quiz" | "results";
+type Screen = "gate" | "quiz" | "custom" | "results";
 
 export function StyleQuizFlow({ analysis }: Props) {
   const { toast } = useToast();
@@ -32,6 +32,10 @@ export function StyleQuizFlow({ analysis }: Props) {
   const [answers, setAnswers] = useState<StyleQuizAnswers>(emptyStyleQuizAnswers());
   const [done, setDone] = useState<StyleQuizPayload | null>(null);
   const [ready, setReady] = useState(false);
+  const [templates, setTemplates] = useState<QuizTemplate[]>([]);
+  const [custom, setCustom] = useState<QuizTemplate | null>(null);
+  const [customStep, setCustomStep] = useState(0);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
 
   const question = STYLE_QUIZ_QUESTIONS[step];
   const progress = screen === "results" ? 100 : ((step + 1) / STYLE_QUIZ_QUESTIONS.length) * 100;
@@ -41,15 +45,21 @@ export function StyleQuizFlow({ analysis }: Props) {
     void (async () => {
       const local = loadLocalQuizHistory();
       let remote: StyleQuizPayload[] = [];
+      let published: QuizTemplate[] = [];
       try {
-        const res = await fetch("/api/quizzes", { credentials: "include" });
-        if (res.ok) remote = (await res.json()) as StyleQuizPayload[];
+        const [quizRes, templateRes] = await Promise.all([
+          fetch("/api/quizzes", { credentials: "include" }),
+          fetch("/api/quiz-templates"),
+        ]);
+        if (quizRes.ok) remote = (await quizRes.json()) as StyleQuizPayload[];
+        if (templateRes.ok) published = (await templateRes.json()) as QuizTemplate[];
       } catch {
         remote = [];
       }
+      setTemplates(published);
       const merged = mergeQuizHistory(remote, local);
       setHistory(merged);
-      setScreen(merged.length ? "gate" : "quiz");
+      setScreen(merged.length || published.length ? "gate" : "quiz");
       setReady(true);
       finishRouteProgress();
     })();
@@ -101,6 +111,7 @@ export function StyleQuizFlow({ analysis }: Props) {
     const result = buildStyleQuizResult(analysis, finalAnswers);
     const payload: StyleQuizPayload = {
       id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
+      quizTitle: "Seasonal style quiz",
       answers: finalAnswers,
       result,
       seasonLabel: analysis.seasonLabel,
@@ -122,9 +133,43 @@ export function StyleQuizFlow({ analysis }: Props) {
 
   function startNewQuiz() {
     setDone(null);
+    setCustom(null);
     setStep(0);
     setAnswers(emptyStyleQuizAnswers());
     setScreen("quiz");
+  }
+
+  function startCustom(template: QuizTemplate) {
+    setCustom(template);
+    setCustomStep(0);
+    setCustomAnswers({});
+    setScreen("custom");
+  }
+
+  function finishCustom() {
+    if (!custom) return;
+    const payload: StyleQuizPayload = {
+      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
+      quizTitle: custom.title,
+      templateId: custom.id,
+      answers: customAnswers,
+      result: {
+        headline: custom.resultTitle,
+        summary: custom.resultBody,
+        stylePersonality: `Completed “${custom.title}”.`,
+        suitPicks: [],
+        outfitIdeas: [],
+        shoppingList: [],
+        groomingTips: [],
+        nextSteps: ["Open another quiz from Your style plans", "Ask the stylist if you want outfit help"],
+      },
+      seasonLabel: analysis.seasonLabel,
+      completedAt: new Date().toISOString(),
+    };
+    setDone(payload);
+    setScreen("results");
+    toast("Quiz saved");
+    void persistQuiz(payload);
   }
 
   function openSaved(payload: StyleQuizPayload) {
@@ -170,7 +215,9 @@ export function StyleQuizFlow({ analysis }: Props) {
       <QuizGate
         seasonLabel={analysis.seasonLabel}
         history={history}
+        templates={templates}
         onNew={startNewQuiz}
+        onCustom={startCustom}
         onOpen={openSaved}
         onDelete={(id) => void deleteSaved(id)}
       />
@@ -179,7 +226,24 @@ export function StyleQuizFlow({ analysis }: Props) {
 
   if (screen === "results" && done) {
     return (
-      <QuizResults payload={done} onRetake={startNewQuiz} onHistory={() => setScreen(history.length ? "gate" : "quiz")} />
+      <QuizResults payload={done} onRetake={startNewQuiz} onHistory={() => setScreen(history.length || templates.length ? "gate" : "quiz")} />
+    );
+  }
+
+  if (screen === "custom" && custom) {
+    return (
+      <CustomQuizRunner
+        template={custom}
+        step={customStep}
+        answers={customAnswers}
+        onBack={() => {
+          if (customStep === 0) setScreen("gate");
+          else setCustomStep((s) => s - 1);
+        }}
+        onAnswers={setCustomAnswers}
+        onStep={setCustomStep}
+        onFinish={finishCustom}
+      />
     );
   }
 
@@ -281,54 +345,192 @@ export function StyleQuizFlow({ analysis }: Props) {
 function QuizGate({
   seasonLabel,
   history,
+  templates,
   onNew,
+  onCustom,
   onOpen,
   onDelete,
 }: {
   seasonLabel: string;
   history: StyleQuizPayload[];
+  templates: QuizTemplate[];
   onNew: () => void;
+  onCustom: (template: QuizTemplate) => void;
   onOpen: (payload: StyleQuizPayload) => void;
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="quiz-shell">
-      <div className="quiz-card quiz-gate anim-fade-up">
-        <p className="section-kicker">{seasonLabel} · Style quiz</p>
-        <h1>Your style plans</h1>
-        <p className="lead">
-          Each completed quiz is saved. Open a past plan, or take another quiz — new answers create a new result and keep
-          the old ones. Same answers will produce the same plan.
-        </p>
-        <div className="actions">
-          <button className="btn btn-primary" type="button" onClick={onNew}>
-            Take another quiz
-          </button>
-        </div>
-        <ul className="quiz-history-list">
-          {history.map((row) => (
-            <li key={row.id || row.completedAt} className="quiz-history-item">
-              <div>
-                <strong>{row.result.headline}</strong>
-                <p className="muted">
-                  {row.seasonLabel} ·{" "}
-                  {new Date(row.completedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-                </p>
-                <p className="quiz-history-summary">{row.result.stylePersonality}</p>
-              </div>
-              <div className="actions">
-                <button className="btn btn-primary" type="button" onClick={() => onOpen(row)}>
-                  View
+    <div className="quiz-shell quiz-shell-wide">
+      <div className="quiz-home anim-fade-up">
+        <header className="quiz-home-hero">
+          <p className="quiz-season-badge">{seasonLabel}</p>
+          <div className="quiz-home-heading">
+            <div>
+              <h1>Your style plans</h1>
+              <p>
+                Saved plans stay here. Take the seasonal quiz again anytime — new answers add a new plan instead of
+                replacing the last one.
+              </p>
+            </div>
+            <button className="btn btn-primary" type="button" onClick={onNew}>
+              Take seasonal quiz
+            </button>
+          </div>
+        </header>
+
+        {templates.length ? (
+          <section className="quiz-home-section">
+            <h2>More quizzes</h2>
+            <div className="quiz-offer-grid">
+              {templates.map((template) => (
+                <button key={template.id} type="button" className="quiz-offer" onClick={() => onCustom(template)}>
+                  <span className="quiz-offer-kicker">Staff quiz</span>
+                  <strong>{template.title}</strong>
+                  <span>{template.description || `${template.questions.length} questions`}</span>
                 </button>
-                {row.id ? (
-                  <button className="btn btn-secondary" type="button" onClick={() => onDelete(row.id!)}>
-                    Delete
-                  </button>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="quiz-home-section">
+          <h2>Completed plans</h2>
+          {history.length ? (
+            <ul className="quiz-plan-grid">
+              {history.map((row) => (
+                <li key={row.id || row.completedAt} className="quiz-plan-card">
+                  <div className="quiz-plan-accent" aria-hidden="true" />
+                  <div className="quiz-plan-copy">
+                    <span className="quiz-plan-kicker">{row.quizTitle || "Seasonal style quiz"}</span>
+                    <strong>{row.result.headline}</strong>
+                    <p>
+                      {new Date(row.completedAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
+                    <p className="quiz-history-summary">{row.result.stylePersonality}</p>
+                  </div>
+                  <div className="quiz-plan-actions">
+                    <button className="btn btn-primary" type="button" onClick={() => onOpen(row)}>
+                      View plan
+                    </button>
+                    {row.id ? (
+                      <button className="btn btn-secondary" type="button" onClick={() => onDelete(row.id!)}>
+                        Delete
+                      </button>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">No completed plans yet. Take the seasonal quiz to create your first one.</p>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function CustomQuizRunner({
+  template,
+  step,
+  answers,
+  onBack,
+  onAnswers,
+  onStep,
+  onFinish,
+}: {
+  template: QuizTemplate;
+  step: number;
+  answers: Record<string, string | string[]>;
+  onBack: () => void;
+  onAnswers: (value: Record<string, string | string[]>) => void;
+  onStep: (value: number) => void;
+  onFinish: () => void;
+}) {
+  const question = template.questions[step];
+  if (!question) return null;
+  const selected = answers[question.id];
+  const canContinue = question.multi ? Array.isArray(selected) && selected.length > 0 : Boolean(selected);
+  const progress = ((step + 1) / template.questions.length) * 100;
+
+  function pick(value: string) {
+    if (question.multi) {
+      const list = Array.isArray(selected) ? selected : [];
+      const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+      onAnswers({ ...answers, [question.id]: next });
+      return;
+    }
+    onAnswers({ ...answers, [question.id]: value });
+    if (step < template.questions.length - 1) {
+      window.setTimeout(() => onStep(step + 1), 180);
+      return;
+    }
+    window.setTimeout(() => onFinish(), 180);
+  }
+
+  return (
+    <div className="quiz-shell">
+      <div className="quiz-card anim-fade-up">
+        <header className="quiz-header">
+          <div className="quiz-header-top">
+            <span className="quiz-season-badge">{template.title}</span>
+            <span className="quiz-step-label">
+              {step + 1} / {template.questions.length}
+            </span>
+          </div>
+          <div className="quiz-progress" aria-hidden="true">
+            <span className="quiz-progress-bar" style={{ width: `${progress}%` }} />
+          </div>
+        </header>
+        <div className="quiz-body">
+          <h1 className="quiz-question-title">{question.title}</h1>
+          <p className="quiz-question-sub">{question.subtitle}</p>
+          <div className={`quiz-options ${question.multi ? "quiz-options-multi" : ""}`}>
+            {question.options.map((opt) => {
+              const on = question.multi
+                ? Array.isArray(selected) && selected.includes(opt.value)
+                : selected === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`quiz-option ${on ? "quiz-option-selected" : ""}`}
+                  onClick={() => pick(opt.value)}
+                >
+                  <span className="quiz-option-emoji">{opt.emoji || "•"}</span>
+                  <span className="quiz-option-body">
+                    <strong className="quiz-option-label">{opt.label}</strong>
+                    {opt.desc ? <span className="quiz-option-desc">{opt.desc}</span> : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <footer className="quiz-footer">
+          <button type="button" className="btn btn-secondary quiz-back" onClick={onBack}>
+            Back
+          </button>
+          {question.multi ? (
+            <button
+              type="button"
+              className="btn btn-primary quiz-next"
+              disabled={!canContinue}
+              onClick={() => {
+                if (step < template.questions.length - 1) onStep(step + 1);
+                else onFinish();
+              }}
+            >
+              {step === template.questions.length - 1 ? "See results" : "Continue"}
+            </button>
+          ) : (
+            <p className="quiz-tap-hint">Tap an option to continue</p>
+          )}
+        </footer>
       </div>
     </div>
   );
@@ -353,56 +555,62 @@ function QuizResults({
     <div className="quiz-shell">
       <div className="quiz-results quiz-card anim-fade-up">
         <header className="quiz-results-hero">
-          <p className="section-kicker">{payload.seasonLabel} · Your style plan</p>
+          <p className="section-kicker">{payload.quizTitle || payload.seasonLabel} · Your style plan</p>
           <h1>{result.headline}</h1>
           <p className="section-lead">{result.summary}</p>
           <p className="quiz-personality">{result.stylePersonality}</p>
           <p className="muted">Saved {new Date(payload.completedAt).toLocaleString()}</p>
         </header>
 
-        <section className="quiz-result-block">
-          <h2>Suit &amp; formal picks</h2>
-          <div className="quiz-card-grid">
-            {result.suitPicks.map((s) => (
-              <article key={s.title + s.detail} className={`quiz-result-card priority-${s.priority}`}>
-                <span className="quiz-priority">{s.priority}</span>
-                <h3>{s.title}</h3>
-                <p>{s.detail}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {result.suitPicks.length ? (
+          <section className="quiz-result-block">
+            <h2>Suit &amp; formal picks</h2>
+            <div className="quiz-card-grid">
+              {result.suitPicks.map((s) => (
+                <article key={s.title + s.detail} className={`quiz-result-card priority-${s.priority}`}>
+                  <span className="quiz-priority">{s.priority}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.detail}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="quiz-result-block">
-          <h2>Outfits for your occasions</h2>
-          <div className="quiz-card-grid">
-            {result.outfitIdeas.map((o) => (
-              <article key={o.occasion + o.detail} className="quiz-result-card">
-                <h3>{o.occasion}</h3>
-                <p>{o.detail}</p>
-                <div className="quiz-color-tags">
-                  {o.colors.map((c) => (
-                    <span key={c} className="tag">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        {result.outfitIdeas.length ? (
+          <section className="quiz-result-block">
+            <h2>Outfits for your occasions</h2>
+            <div className="quiz-card-grid">
+              {result.outfitIdeas.map((o) => (
+                <article key={o.occasion + o.detail} className="quiz-result-card">
+                  <h3>{o.occasion}</h3>
+                  <p>{o.detail}</p>
+                  <div className="quiz-color-tags">
+                    {o.colors.map((c) => (
+                      <span key={c} className="tag">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="quiz-result-block">
-          <h2>Shopping priorities</h2>
-          <ul className="guide-list quiz-guide-list">
-            {result.shoppingList.map((s) => (
-              <li key={s.item}>
-                <strong>{s.item}</strong>
-                <span>{s.why}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {result.shoppingList.length ? (
+          <section className="quiz-result-block">
+            <h2>Shopping priorities</h2>
+            <ul className="guide-list quiz-guide-list">
+              {result.shoppingList.map((s) => (
+                <li key={s.item}>
+                  <strong>{s.item}</strong>
+                  <span>{s.why}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {result.groomingTips.length > 0 ? (
           <section className="quiz-result-block">

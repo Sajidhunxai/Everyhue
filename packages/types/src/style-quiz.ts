@@ -44,8 +44,36 @@ export type StyleQuizResult = {
 
 export type StyleQuizPayload = {
   id?: string;
-  answers: StyleQuizAnswers;
+  quizTitle?: string;
+  templateId?: string;
+  answers: StyleQuizAnswers | Record<string, string | string[]>;
   result: StyleQuizResult;
   seasonLabel: string;
   completedAt: string;
+};
+
+export type CustomQuizOption = {
+  value: string;
+  label: string;
+  emoji?: string;
+  desc?: string;
+};
+
+export type CustomQuizQuestion = {
+  id: string;
+  title: string;
+  subtitle: string;
+  multi?: boolean;
+  options: CustomQuizOption[];
+};
+
+export type QuizTemplate = {
+  id: string;
+  title: string;
+  description: string;
+  published: boolean;
+  questions: CustomQuizQuestion[];
+  resultTitle: string;
+  resultBody: string;
+  createdAt: string;
 };

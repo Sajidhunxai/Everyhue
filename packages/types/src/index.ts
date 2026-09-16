@@ -85,4 +85,7 @@ export type {
   StyleQuizResult,
   StyleQuizOutfit,
   StyleQuizPayload,
+  CustomQuizOption,
+  CustomQuizQuestion,
+  QuizTemplate,
 } from "./style-quiz";

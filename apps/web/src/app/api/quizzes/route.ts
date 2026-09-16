@@ -19,23 +19,18 @@ function quizTable() {
 }
 
 const createSchema = z.object({
-  answers: z.object({
-    primaryGoal: z.string(),
-    occasions: z.array(z.string()),
-    formalFocus: z.string(),
-    fitPreference: z.string(),
-    helpAreas: z.array(z.string()),
-    budget: z.string(),
-  }),
+  quizTitle: z.string().max(80).optional(),
+  templateId: z.string().optional(),
+  answers: z.record(z.union([z.string(), z.array(z.string())])),
   result: z.object({
     headline: z.string().min(1).max(200),
     summary: z.string(),
     stylePersonality: z.string(),
-    suitPicks: z.array(z.unknown()),
-    outfitIdeas: z.array(z.unknown()),
-    shoppingList: z.array(z.unknown()),
-    groomingTips: z.array(z.string()),
-    nextSteps: z.array(z.string()),
+    suitPicks: z.array(z.unknown()).optional(),
+    outfitIdeas: z.array(z.unknown()).optional(),
+    shoppingList: z.array(z.unknown()).optional(),
+    groomingTips: z.array(z.string()).optional(),
+    nextSteps: z.array(z.string()).optional(),
   }),
   seasonLabel: z.string().min(1).max(80),
   completedAt: z.string().optional(),
@@ -79,9 +74,18 @@ export async function POST(req: Request) {
   const completedAt = parsed.data.completedAt || new Date().toISOString();
   const payload: StyleQuizPayload = {
     answers: parsed.data.answers,
-    result: parsed.data.result as StyleQuizPayload["result"],
+    result: {
+      suitPicks: [],
+      outfitIdeas: [],
+      shoppingList: [],
+      groomingTips: [],
+      nextSteps: [],
+      ...parsed.data.result,
+    } as StyleQuizPayload["result"],
     seasonLabel: parsed.data.seasonLabel,
     completedAt,
+    quizTitle: parsed.data.quizTitle,
+    templateId: parsed.data.templateId,
   };
 
   try {

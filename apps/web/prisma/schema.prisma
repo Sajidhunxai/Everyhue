@@ -38,6 +38,19 @@ model SavedQuiz {
 
   @@index([userId, createdAt])
 }
+
+model QuizTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  published    Boolean  @default(false)
+  questionsJson String
+  resultTitle  String   @default("")
+  resultBody   String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model SavedLook {
   id        String   @id @default(cuid())
   userId    String
