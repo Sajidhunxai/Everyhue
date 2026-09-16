@@ -1536,10 +1536,17 @@ h2 {
 }
 
 .dash-metric {
+  display: block;
   padding: 1rem 1.05rem 0.95rem;
   border-radius: 1.05rem;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.dash-metric:hover {
+  border-color: rgba(123, 159, 212, 0.45);
 }
 
 .dash-metric-value {
@@ -2111,6 +2118,95 @@ h2 {
   gap: 0.75rem;
   padding: 0.65rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.history-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 1rem 0 0.5rem;
+}
+
+.history-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: min(20rem, 100%);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.history-search input,
+.history-edit input,
+.history-edit textarea {
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--bg1);
+  color: var(--ink);
+  font: inherit;
+  color-scheme: dark;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.history-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.history-check {
+  padding-top: 0.2rem;
+}
+
+.history-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.history-meta,
+.history-notes {
+  margin: 0.35rem 0 0;
+}
+
+.history-notes {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.history-edit {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.history-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.history-card .actions {
+  margin-top: 0.85rem;
 }
 
 .color-dot {

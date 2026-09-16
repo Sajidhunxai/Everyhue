@@ -65,6 +65,12 @@ export default async function DashboardPage() {
     { href: "/stylist", title: "AI stylist", desc: "Ask outfit questions in your palette", icon: "stylist" },
     { href: "/quiz", title: "Style quiz", desc: "Suits, outfits, and a shopping plan", icon: "quiz" },
     {
+      href: "/history",
+      title: "Analysis history",
+      desc: `${analysisCount} saved result${analysisCount === 1 ? "" : "s"}`,
+      icon: "history",
+    },
+    {
       href: "/results",
       title: "Latest results",
       desc: latestSeason ? `Last: ${latestSeason}` : "No analysis yet",

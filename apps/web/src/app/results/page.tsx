@@ -14,6 +14,19 @@ export default function ResultsPage() {
 
   useEffect(() => {
     async function load() {
+      const id = new URLSearchParams(window.location.search).get("id");
+      if (id) {
+        const res = await fetch(`/api/analyses?id=${encodeURIComponent(id)}`, { credentials: "include" });
+        if (res.ok) {
+          const row = (await res.json()) as { result: AnalyzeResult };
+          if (row.result) {
+            saveLastResult(row.result);
+            setResult(row.result);
+            setLoading(false);
+            return;
+          }
+        }
+      }
       const stored = loadLastResult();
       if (stored) {
         setResult(stored);
@@ -79,9 +92,15 @@ export default function ResultsPage() {
     return (
       <section className="panel">
         <h1>No results yet</h1>
-        <Link className="btn btn-primary" href="/analyze">
-          Go to analyze
-        </Link>
+        <p className="lead">Run a new analysis, or open one from your history if you have saved results.</p>
+        <div className="actions">
+          <Link className="btn btn-primary" href="/analyze">
+            Go to analyze
+          </Link>
+          <Link className="btn btn-secondary" href="/history">
+            View history
+          </Link>
+        </div>
       </section>
     );
   }
@@ -131,6 +150,9 @@ export default function ResultsPage() {
         </button>
         <Link className="btn btn-secondary" href="/analyze">
           Analyze again
+        </Link>
+        <Link className="btn btn-secondary" href="/history">
+          History
         </Link>
       </div>
     </section>

@@ -104,6 +104,8 @@ export type StylistMessage = {
 export type SavedAnalysis = {
   id: string;
   result: AnalyzeResult;
+  title?: string | null;
+  notes?: string | null;
   faceShape?: FaceShape;
   bodyType?: BodyType;
   profileId?: string | null;

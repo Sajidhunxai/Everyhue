@@ -21,7 +21,8 @@ export type DashboardIconName =
   | "family"
   | "stylist"
   | "quiz"
-  | "results";
+  | "results"
+  | "history";
 
 type Props = {
   firstName: string | null;
@@ -150,7 +151,7 @@ const GROUPS: { id: string; label: string; hrefs: string[] }[] = [
   {
     id: "style",
     label: "Style & family",
-    hrefs: ["/stylist", "/quiz", "/profiles", "/results"],
+    hrefs: ["/stylist", "/quiz", "/profiles", "/history", "/results"],
   },
 ];
 
@@ -182,6 +183,11 @@ export function DashboardView({ firstName, image, stats, links }: Props) {
                 Compare lighting
               </Link>
             )}
+            {stats.analysisCount > 0 ? (
+              <Link href="/history" className="btn btn-secondary">
+                History
+              </Link>
+            ) : null}
           </div>
         </div>
         {image ? (
@@ -193,10 +199,10 @@ export function DashboardView({ firstName, image, stats, links }: Props) {
       </section>
 
       <section className="dash-metrics anim-fade-up anim-delay-1">
-        <div className="dash-metric">
+        <Link href="/history" className="dash-metric">
           <span className="dash-metric-value">{stats.analysisCount}</span>
           <span className="dash-metric-label">Analyses</span>
-        </div>
+        </Link>
         <div className="dash-metric">
           <span className="dash-metric-value">{stats.wardrobeCount}</span>
           <span className="dash-metric-label">Wardrobe</span>

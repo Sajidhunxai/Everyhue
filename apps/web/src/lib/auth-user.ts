@@ -1,7 +1,12 @@
-import type { AnalyzeResult } from "@photomatcher/types";
+import type { AnalyzeResult, FaceShape, BodyType, SavedAnalysis } from "@photomatcher/types";
 import { auth } from "@/auth";
 import { verifyMobileToken } from "@/lib/mobile-token";
 import { prisma } from "@/lib/prisma";
+
+type HistoryEnvelope = AnalyzeResult & {
+  historyTitle?: string;
+  historyNotes?: string;
+};
 
 export async function requireDbUser(req?: Request) {
   const session = await auth();
@@ -50,7 +55,49 @@ export async function requireDbUser(req?: Request) {
 }
 
 export function parseAnalysisJson(json: string): AnalyzeResult {
-  return JSON.parse(json) as AnalyzeResult;
+  const raw = JSON.parse(json) as HistoryEnvelope;
+  const { historyTitle: _title, historyNotes: _notes, ...result } = raw;
+  return result;
+}
+
+export function parseSavedAnalysis(row: {
+  id: string;
+  profileId: string | null;
+  faceShape: string | null;
+  bodyType: string | null;
+  resultJson: string;
+  createdAt: Date;
+}): SavedAnalysis {
+  const raw = JSON.parse(row.resultJson) as HistoryEnvelope;
+  const { historyTitle, historyNotes, ...result } = raw;
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    faceShape: (row.faceShape as FaceShape | null) ?? undefined,
+    bodyType: (row.bodyType as BodyType | null) ?? undefined,
+    result,
+    title: historyTitle?.trim() || null,
+    notes: historyNotes?.trim() || null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export function mergeHistoryJson(
+  json: string,
+  patch: { title?: string | null; notes?: string | null },
+) {
+  const raw = JSON.parse(json) as HistoryEnvelope;
+  if (patch.title !== undefined) {
+    const title = patch.title?.trim();
+    if (title) raw.historyTitle = title;
+    else delete raw.historyTitle;
+  }
+  if (patch.notes !== undefined) {
+    const notes = patch.notes?.trim();
+    if (notes) raw.historyNotes = notes;
+    else delete raw.historyNotes;
+  }
+  return JSON.stringify(raw);
 }
 
 export async function deleteUserData(userId: string) {

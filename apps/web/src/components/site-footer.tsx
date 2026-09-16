@@ -10,6 +10,7 @@ const FEATURE_LINKS = [
   { href: "/shop", label: "Shop by season" },
   { href: "/wardrobe", label: "Wardrobe" },
   { href: "/looks", label: "Saved looks" },
+  { href: "/history", label: "Analysis history" },
   { href: "/profiles", label: "Family profiles" },
   { href: "/stylist", label: "AI stylist" },
   { href: "/quiz", label: "Style quiz" },

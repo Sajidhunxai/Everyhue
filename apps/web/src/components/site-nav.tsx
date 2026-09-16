@@ -17,6 +17,7 @@ const MORE_LINKS = [
   { href: "/beauty", label: "Makeup & hair" },
   { href: "/try-on", label: "Look studio" },
   { href: "/looks", label: "Looks" },
+  { href: "/history", label: "History" },
   { href: "/quiz", label: "Style quiz" },
   { href: "/profiles", label: "Family" },
   { href: "/stylist", label: "Stylist" },
