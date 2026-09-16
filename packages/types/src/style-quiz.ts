@@ -43,6 +43,7 @@ export type StyleQuizResult = {
 };
 
 export type StyleQuizPayload = {
+  id?: string;
   answers: StyleQuizAnswers;
   result: StyleQuizResult;
   seasonLabel: string;

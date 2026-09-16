@@ -19,11 +19,7 @@ export default function TryOnPage() {
   const catalog = useMemo(() => (result ? buildTryOnCatalog(result) : null), [result]);
 
   if (!ready) {
-    return (
-      <section className="panel">
-        <p className="lead">Loading look studio…</p>
-      </section>
-    );
+    return <section className="panel" aria-busy="true" />;
   }
 
   if (!result || !catalog) {

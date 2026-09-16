@@ -7,6 +7,7 @@ import type { FamilyProfile, SavedAnalysis } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
 import { saveLastResult, saveLastPhoto, saveLastAnalysisId } from "@/lib/last-result";
 import { Select } from "@/components/select";
+import { startRouteProgress, finishRouteProgress } from "@/lib/route-progress";
 
 function formatWhen(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -66,17 +67,22 @@ export default function HistoryPage() {
   const [selected, setSelected] = useState<string[]>([]);
 
   async function load() {
-    const [analysisRes, profileRes] = await Promise.all([
-      fetch("/api/analyses", { credentials: "include" }),
-      fetch("/api/profiles", { credentials: "include" }),
-    ]);
-    if (analysisRes.status === 401) {
-      router.push("/login");
-      return;
+    startRouteProgress();
+    try {
+      const [analysisRes, profileRes] = await Promise.all([
+        fetch("/api/analyses", { credentials: "include" }),
+        fetch("/api/profiles", { credentials: "include" }),
+      ]);
+      if (analysisRes.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (analysisRes.ok) setRows(await analysisRes.json());
+      if (profileRes.ok) setProfiles(await profileRes.json());
+    } finally {
+      setLoading(false);
+      finishRouteProgress();
     }
-    if (analysisRes.ok) setRows(await analysisRes.json());
-    if (profileRes.ok) setProfiles(await profileRes.json());
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -172,10 +178,13 @@ export default function HistoryPage() {
     setSelected((current) => (current.includes(id) ? current.filter((v) => v !== id) : [...current, id]));
   }
 
-  if (loading) {
+  if (loading && !rows.length) {
     return (
-      <section className="panel">
-        <p className="lead">Loading your analysis history…</p>
+      <section className="panel" aria-busy="true">
+        <h1>Analysis history</h1>
+        <p className="lead">
+          Every signed-in analysis is saved here. Open one to use it across Look studio, makeup, shop, and stylist.
+        </p>
       </section>
     );
   }

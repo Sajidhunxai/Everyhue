@@ -6,6 +6,7 @@ import type { AnalyzeResult } from "@photomatcher/types";
 import { ResultsDisplay } from "@/components/results-display";
 import { loadLastResult, saveLastResult, saveLastPhoto, saveLastAnalysisId } from "@/lib/last-result";
 import { useToast } from "@/components/toast";
+import { startRouteProgress, finishRouteProgress } from "@/lib/route-progress";
 
 export default function ResultsPage() {
   const { toast } = useToast();
@@ -14,32 +15,31 @@ export default function ResultsPage() {
 
   useEffect(() => {
     async function load() {
-      const id = new URLSearchParams(window.location.search).get("id");
-      if (id) {
-        const res = await fetch(`/api/analyses?id=${encodeURIComponent(id)}`, { credentials: "include" });
-        if (res.ok) {
-          const row = (await res.json()) as {
-            id: string;
-            result: AnalyzeResult;
-            photoDataUrl?: string | null;
-          };
-          if (row.result) {
-            saveLastResult(row.result);
-            saveLastAnalysisId(row.id);
-            saveLastPhoto(row.photoDataUrl ?? null);
-            setResult(row.result);
-            setLoading(false);
-            return;
+      startRouteProgress();
+      try {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (id) {
+          const res = await fetch(`/api/analyses?id=${encodeURIComponent(id)}`, { credentials: "include" });
+          if (res.ok) {
+            const row = (await res.json()) as {
+              id: string;
+              result: AnalyzeResult;
+              photoDataUrl?: string | null;
+            };
+            if (row.result) {
+              saveLastResult(row.result);
+              saveLastAnalysisId(row.id);
+              saveLastPhoto(row.photoDataUrl ?? null);
+              setResult(row.result);
+              return;
+            }
           }
         }
-      }
-      const stored = loadLastResult();
-      if (stored) {
-        setResult(stored);
-        setLoading(false);
-        return;
-      }
-      try {
+        const stored = loadLastResult();
+        if (stored) {
+          setResult(stored);
+          return;
+        }
         const res = await fetch("/api/analyses", { credentials: "include" });
         if (res.ok) {
           const rows = (await res.json()) as {
@@ -66,6 +66,7 @@ export default function ResultsPage() {
         }
       } finally {
         setLoading(false);
+        finishRouteProgress();
       }
     }
     void load();
@@ -103,11 +104,7 @@ export default function ResultsPage() {
   }
 
   if (loading) {
-    return (
-      <section className="panel">
-        <p className="lead">Loading results…</p>
-      </section>
-    );
+    return <section className="panel" aria-busy="true" />;
   }
 
   if (!result) {

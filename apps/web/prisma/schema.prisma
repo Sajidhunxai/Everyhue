@@ -22,10 +22,22 @@ model User {
   messages     ChatMessage[]
 
   looks          SavedLook[]
+  quizzes        SavedQuiz[]
 
   @@index([email])
 }
 
+model SavedQuiz {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seasonLabel  String
+  headline     String
+  payloadJson  String
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
 model SavedLook {
   id        String   @id @default(cuid())
   userId    String

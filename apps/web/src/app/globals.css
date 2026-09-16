@@ -2713,6 +2713,40 @@ a.dash-metric:hover {
   margin-top: 0.5rem;
 }
 
+.quiz-gate .lead {
+  margin-bottom: 1rem;
+}
+
+.quiz-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.quiz-history-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.quiz-history-item p {
+  margin: 0.3rem 0 0;
+}
+
+.quiz-history-summary {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 @media (min-width: 560px) {
   .quiz-results-actions {
     flex-direction: row;

@@ -54,6 +54,21 @@ export function NavigationProgress() {
   }, []);
 
   useEffect(() => {
+    function onStart() {
+      start();
+    }
+    function onFinish() {
+      finish();
+    }
+    window.addEventListener("everyhue:progress-start", onStart);
+    window.addEventListener("everyhue:progress-finish", onFinish);
+    return () => {
+      window.removeEventListener("everyhue:progress-start", onStart);
+      window.removeEventListener("everyhue:progress-finish", onFinish);
+    };
+  }, []);
+
+  useEffect(() => {
     finish();
   }, [pathname, search]);
 

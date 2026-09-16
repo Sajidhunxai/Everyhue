@@ -163,7 +163,7 @@ function AnalyzeForm() {
 
 export default function AnalyzePage() {
   return (
-    <Suspense fallback={<section className="panel"><p>Loading…</p></section>}>
+    <Suspense fallback={null}>
       <AnalyzeForm />
     </Suspense>
   );
