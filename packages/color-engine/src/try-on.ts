@@ -172,6 +172,10 @@ export function buildTryOnCatalog(result: AnalyzeResult): TryOnCatalog {
       JEWEL_HEX,
       result.undertone === "cool" ? "#C0C5CC" : "#D4A017",
     ),
+    dress: unique([
+      ...result.palette.slice(0, 6).map((s) => ({ hex: s.hex, name: s.name, recommended: true })),
+      ...paletteExtras.map((s) => ({ ...s, recommended: false })),
+    ]),
   };
   const look: TryOnLook = {
     hair: options.hair[0]?.hex ?? "#5C3A28",
@@ -179,6 +183,7 @@ export function buildTryOnCatalog(result: AnalyzeResult): TryOnCatalog {
     lips: options.lips[0]?.hex ?? "#C96B6B",
     cheeks: options.cheeks[0]?.hex ?? "#E8A888",
     jewelry: options.jewelry[0]?.hex ?? "#D4A017",
+    dress: options.dress[0]?.hex ?? result.palette[0]?.hex ?? "#1C2A4A",
     skin: SKIN[result.undertone],
   };
   return { skin: look.skin, look, options };

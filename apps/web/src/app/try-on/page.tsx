@@ -30,7 +30,7 @@ export default function TryOnPage() {
     return (
       <section className="panel">
         <h1>Look studio</h1>
-        <p className="lead">Run a color analysis first, then try hair, eye, lip, and jewelry colors on a portrait.</p>
+        <p className="lead">Run a color analysis first, then try hair, eyes, lips, jewelry, and dress colors on your photo.</p>
         <Link className="btn btn-primary" href="/analyze">
           Analyze a photo
         </Link>
@@ -43,7 +43,7 @@ export default function TryOnPage() {
       <p className="muted">{result.seasonLabel}</p>
       <h1>Look studio</h1>
       <p className="lead">
-        Change hair, eyes, lips, blush, and jewelry using shades suggested for a {result.undertone} undertone.
+        Recolor real hair, lips, eyes, and cheeks on your photo — not painted ovals. Uses on-device face and hair detection. First load may take a few seconds.
       </p>
       <TryOnStudio catalog={catalog} seasonLabel={result.seasonLabel} />
     </section>

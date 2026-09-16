@@ -1,4 +1,4 @@
-export type TryOnFeature = "hair" | "eyes" | "lips" | "cheeks" | "jewelry";
+export type TryOnFeature = "hair" | "eyes" | "lips" | "cheeks" | "jewelry" | "dress";
 
 export type TryOnSwatch = {
   hex: string;
@@ -12,6 +12,7 @@ export type TryOnLook = {
   lips: string;
   cheeks: string;
   jewelry: string;
+  dress: string;
   skin: string;
 };
 

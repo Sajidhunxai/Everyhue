@@ -206,5 +206,8 @@ describe("try-on catalog", () => {
     expect(catalog.options.hair.length).toBeGreaterThan(0);
     expect(catalog.options.lips.some((s) => s.recommended)).toBe(true);
     expect(catalog.options.eyes.length).toBeGreaterThan(0);
+    expect(catalog.options.jewelry.length).toBeGreaterThan(0);
+    expect(catalog.options.dress.length).toBeGreaterThan(0);
+    expect(catalog.look.dress).toMatch(/^#/);
   });
 });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { WardrobeItem } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
 import { Select } from "@/components/select";
+import { ColorField } from "@/components/color-field";
 
 const CATEGORIES = [
   "General",
@@ -90,7 +91,7 @@ export default function WardrobePage() {
       <form className="form-grid" onSubmit={add}>
         <label>
           Color
-          <input type="color" value={hex} onChange={(e) => setHex(e.target.value)} />
+          <ColorField aria-label="Item color" value={hex} onChange={setHex} />
         </label>
         <label>
           Name

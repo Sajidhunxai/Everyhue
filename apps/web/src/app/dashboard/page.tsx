@@ -47,7 +47,7 @@ export default async function DashboardPage() {
     { href: "/compare", title: "Compare photos", desc: "Choose the better-lit shot first", icon: "compare" },
     { href: "/match", title: "Palette match", desc: "Score any hex against your colors", icon: "match" },
     { href: "/beauty", title: "Makeup & hair", desc: "Lips, metals, and hair hints", icon: "beauty" },
-    { href: "/try-on", title: "Look studio", desc: "Preview hair, eyes, lips, and jewelry", icon: "tryon" },
+    { href: "/try-on", title: "Look studio", desc: "Preview hair, eyes, lips, jewelry, and dress", icon: "tryon" },
     { href: "/looks", title: "Saved looks", desc: "Build outfits from wardrobe colors", icon: "looks" },
     { href: "/shop", title: "Shop my palette", desc: "Suits, shirts, and accessories", icon: "shop" },
     {

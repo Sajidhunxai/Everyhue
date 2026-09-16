@@ -62,7 +62,7 @@ const FEATURES = [
   },
   {
     title: "Look studio",
-    desc: "Preview hair, eye, lip, and jewelry colors on a portrait or your photo.",
+    desc: "Preview hair, eye, lip, jewelry, and dress colors on your photo.",
     href: "/try-on",
     swatches: ["#8B3A2A", "#C41C2C", "#D4A017", "#E8B896"],
   },

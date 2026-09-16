@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     "@photomatcher/color-engine",
     "@photomatcher/api-client",
   ],
+  serverExternalPackages: ["@mediapipe/tasks-vision"],
 };
 
 export default nextConfig;

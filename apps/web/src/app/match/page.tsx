@@ -7,6 +7,7 @@ import type { AnalyzeResult, PaletteMatch } from "@photomatcher/types";
 import { samplesFromImageFile } from "@/lib/image-samples";
 import { loadLastResult } from "@/lib/last-result";
 import { useToast } from "@/components/toast";
+import { ColorField } from "@/components/color-field";
 
 function normalizeHex(value: string) {
   const raw = value.trim().replace(/^#/, "");
@@ -97,23 +98,14 @@ export default function MatchPage() {
         }}
       >
         <label>
-          Color picker
-          <input
-            type="color"
+          Color
+          <ColorField
+            aria-label="Color to match"
             value={picker}
-            onChange={(e) => {
-              setPicker(e.target.value);
-              setHexInput(e.target.value.toUpperCase());
+            onChange={(hex) => {
+              setPicker(hex);
+              setHexInput(hex);
             }}
-          />
-        </label>
-        <label>
-          Hex code
-          <input
-            value={hexInput}
-            onChange={(e) => setHexInput(e.target.value)}
-            placeholder="#7B9FD4"
-            spellCheck={false}
           />
         </label>
         <label>
