@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AnalyzeResult } from "@photomatcher/types";
 import { ResultsDisplay } from "@/components/results-display";
-import { loadLastResult, saveLastResult } from "@/lib/last-result";
+import { loadLastResult, saveLastResult, saveLastPhoto, saveLastAnalysisId } from "@/lib/last-result";
 import { useToast } from "@/components/toast";
 
 export default function ResultsPage() {
@@ -18,9 +18,15 @@ export default function ResultsPage() {
       if (id) {
         const res = await fetch(`/api/analyses?id=${encodeURIComponent(id)}`, { credentials: "include" });
         if (res.ok) {
-          const row = (await res.json()) as { result: AnalyzeResult };
+          const row = (await res.json()) as {
+            id: string;
+            result: AnalyzeResult;
+            photoDataUrl?: string | null;
+          };
           if (row.result) {
             saveLastResult(row.result);
+            saveLastAnalysisId(row.id);
+            saveLastPhoto(row.photoDataUrl ?? null);
             setResult(row.result);
             setLoading(false);
             return;
@@ -36,10 +42,26 @@ export default function ResultsPage() {
       try {
         const res = await fetch("/api/analyses", { credentials: "include" });
         if (res.ok) {
-          const rows = (await res.json()) as { result: AnalyzeResult }[];
+          const rows = (await res.json()) as {
+            id?: string;
+            result: AnalyzeResult;
+            hasPhoto?: boolean;
+          }[];
           if (rows[0]?.result) {
             setResult(rows[0].result);
             saveLastResult(rows[0].result);
+            if (rows[0].id) {
+              saveLastAnalysisId(rows[0].id);
+              if (rows[0].hasPhoto) {
+                const full = await fetch(`/api/analyses?id=${encodeURIComponent(rows[0].id)}`, {
+                  credentials: "include",
+                });
+                if (full.ok) {
+                  const row = (await full.json()) as { photoDataUrl?: string | null };
+                  saveLastPhoto(row.photoDataUrl ?? null);
+                }
+              }
+            }
           }
         }
       } finally {

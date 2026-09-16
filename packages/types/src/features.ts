@@ -106,6 +106,8 @@ export type SavedAnalysis = {
   result: AnalyzeResult;
   title?: string | null;
   notes?: string | null;
+  hasPhoto?: boolean;
+  photoDataUrl?: string | null;
   faceShape?: FaceShape;
   bodyType?: BodyType;
   profileId?: string | null;

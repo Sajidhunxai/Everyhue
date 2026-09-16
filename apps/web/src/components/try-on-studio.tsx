@@ -11,6 +11,7 @@ import {
   buildTryOnMasks,
   cloneMasks,
   copyLayer,
+  dataUrlToImage,
   drawOriginal,
   fileToImage,
   renderTryOn,
@@ -21,6 +22,7 @@ import {
   type TryOnMasks,
   type TryOnStrength,
 } from "@/lib/try-on-ai";
+import { fileToPortraitDataUrl, loadLastPhoto, persistAnalysisPhoto, loadLastAnalysisId } from "@/lib/last-result";
 
 const FEATURES: { id: StudioFeature; label: string }[] = [
   { id: "hair", label: "Hair" },
@@ -82,7 +84,7 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
   const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false });
   const [undo, setUndo] = useState<UndoEntry[]>([]);
   const [redo, setRedo] = useState<UndoEntry[]>([]);
-  const [uploadOpen, setUploadOpen] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Add a daylight face photo to apply real hair, makeup, jewelry, and dress color.");
@@ -227,12 +229,15 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
     setCursor({ x: clientX - box.left, y: clientY - box.top, visible: true });
   }
 
-  async function onPhoto(file: File | null) {
-    if (!file) return;
+  async function applyPrepared(
+    image: HTMLImageElement,
+    canvas: HTMLCanvasElement,
+    persistPhoto?: string,
+    fromSaved = false,
+  ) {
     setBusy(true);
     setStatus("Looking for a person's face…");
     try {
-      const { image, canvas } = await fileToImage(file);
       const next = await buildTryOnMasks(image, canvas);
       setMasks(next);
       setUndo([]);
@@ -241,7 +246,8 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
       setShowOriginal(false);
       setBrush("paint");
       setStatus("Face found. Use Paint/Erase under the photo, then change size or undo if needed.");
-      toast("Photo analyzed");
+      if (!fromSaved) toast("Photo ready");
+      if (persistPhoto) void persistAnalysisPhoto(loadLastAnalysisId(), persistPhoto);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Could not analyze that photo";
       setStatus(message);
@@ -255,6 +261,41 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
     } finally {
       if (fileRef.current) fileRef.current.value = "";
       setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    const saved = loadLastPhoto();
+    if (!saved) {
+      setUploadOpen(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { image, canvas } = await dataUrlToImage(saved);
+        if (cancelled) return;
+        await applyPrepared(image, canvas, undefined, true);
+      } catch {
+        if (!cancelled) setUploadOpen(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function onPhoto(file: File | null) {
+    if (!file) return;
+    try {
+      const dataUrl = await fileToPortraitDataUrl(file);
+      const { image, canvas } = await fileToImage(file);
+      await applyPrepared(image, canvas, dataUrl);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not read that photo";
+      setStatus(message);
+      setUploadOpen(true);
+      toast(message, "error");
     }
   }
 
@@ -391,7 +432,7 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
         ) : (
           <button type="button" className="tryon-empty" onClick={() => setUploadOpen(true)}>
             <strong>Add a real photo</strong>
-            <span>Recolor hair, eyes, lips, blush, jewelry, and dress. Paint or erase any layer by hand.</span>
+            <span>We’ll use the photo saved with this analysis when you have one. You can still change it.</span>
           </button>
         )}
         <p className="muted tryon-caption">

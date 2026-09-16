@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import type { AnalyzeResult, BodyType, FaceShape } from "@photomatcher/types";
 import { samplesFromImageFile } from "@/lib/image-samples";
-import { saveLastResult } from "@/lib/last-result";
+import { saveLastResult, fileToPortraitDataUrl, saveLastPhoto, saveLastAnalysisId } from "@/lib/last-result";
 import { Select } from "@/components/select";
 import { useToast } from "@/components/toast";
 
@@ -60,6 +60,7 @@ function AnalyzeForm() {
     setError(null);
     try {
       const samples = await samplesFromImageFile(file);
+      const photoDataUrl = await fileToPortraitDataUrl(file);
 
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -71,6 +72,7 @@ function AnalyzeForm() {
           faceShape,
           bodyType,
           profileId: profileId || undefined,
+          photoDataUrl,
         }),
       });
       if (res.status === 401) {
@@ -87,8 +89,10 @@ function AnalyzeForm() {
         }
         throw new Error(message);
       }
-      const data = (await res.json()) as AnalyzeResult;
+      const data = (await res.json()) as AnalyzeResult & { analysisId?: string };
       saveLastResult(data);
+      saveLastPhoto(photoDataUrl);
+      if (data.analysisId) saveLastAnalysisId(data.analysisId);
       toast("Analysis ready");
       router.push("/results");
     } catch (e) {

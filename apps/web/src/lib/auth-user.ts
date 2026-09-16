@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 type HistoryEnvelope = AnalyzeResult & {
   historyTitle?: string;
   historyNotes?: string;
+  historyPhoto?: string;
 };
 
 export async function requireDbUser(req?: Request) {
@@ -56,20 +57,23 @@ export async function requireDbUser(req?: Request) {
 
 export function parseAnalysisJson(json: string): AnalyzeResult {
   const raw = JSON.parse(json) as HistoryEnvelope;
-  const { historyTitle: _title, historyNotes: _notes, ...result } = raw;
+  const { historyTitle: _title, historyNotes: _notes, historyPhoto: _photo, ...result } = raw;
   return result;
 }
 
-export function parseSavedAnalysis(row: {
-  id: string;
-  profileId: string | null;
-  faceShape: string | null;
-  bodyType: string | null;
-  resultJson: string;
-  createdAt: Date;
-}): SavedAnalysis {
+export function parseSavedAnalysis(
+  row: {
+    id: string;
+    profileId: string | null;
+    faceShape: string | null;
+    bodyType: string | null;
+    resultJson: string;
+    createdAt: Date;
+  },
+  options?: { includePhoto?: boolean },
+): SavedAnalysis {
   const raw = JSON.parse(row.resultJson) as HistoryEnvelope;
-  const { historyTitle, historyNotes, ...result } = raw;
+  const { historyTitle, historyNotes, historyPhoto, ...result } = raw;
   return {
     id: row.id,
     profileId: row.profileId,
@@ -78,13 +82,15 @@ export function parseSavedAnalysis(row: {
     result,
     title: historyTitle?.trim() || null,
     notes: historyNotes?.trim() || null,
+    hasPhoto: Boolean(historyPhoto),
+    photoDataUrl: options?.includePhoto ? historyPhoto ?? null : null,
     createdAt: row.createdAt.toISOString(),
   };
 }
 
 export function mergeHistoryJson(
   json: string,
-  patch: { title?: string | null; notes?: string | null },
+  patch: { title?: string | null; notes?: string | null; photoDataUrl?: string | null },
 ) {
   const raw = JSON.parse(json) as HistoryEnvelope;
   if (patch.title !== undefined) {
@@ -96,6 +102,11 @@ export function mergeHistoryJson(
     const notes = patch.notes?.trim();
     if (notes) raw.historyNotes = notes;
     else delete raw.historyNotes;
+  }
+  if (patch.photoDataUrl !== undefined) {
+    const photo = patch.photoDataUrl?.trim();
+    if (photo) raw.historyPhoto = photo;
+    else delete raw.historyPhoto;
   }
   return JSON.stringify(raw);
 }

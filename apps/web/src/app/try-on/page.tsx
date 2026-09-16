@@ -43,7 +43,7 @@ export default function TryOnPage() {
       <p className="muted">{result.seasonLabel}</p>
       <h1>Look studio</h1>
       <p className="lead">
-        Recolor real hair, lips, eyes, and cheeks on your photo — not painted ovals. Uses on-device face and hair detection. First load may take a few seconds.
+        Recolor the photo saved with this analysis. Change photo only if you want a different portrait.
       </p>
       <TryOnStudio catalog={catalog} seasonLabel={result.seasonLabel} />
     </section>

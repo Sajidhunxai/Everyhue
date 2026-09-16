@@ -28,6 +28,11 @@ const jsonSchema = z.object({
     ])
     .optional(),
   profileId: z.string().optional(),
+  photoDataUrl: z
+    .string()
+    .max(900_000)
+    .optional()
+    .refine((value) => !value || /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(value), "Invalid photo"),
 });
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -52,6 +57,7 @@ export async function POST(req: Request) {
     let faceShape: string | undefined;
     let bodyType: string | undefined;
     let profileId: string | undefined;
+    let photoDataUrl: string | undefined;
 
     if (contentType.includes("multipart/form-data")) {
       const form = await req.formData();
@@ -83,6 +89,7 @@ export async function POST(req: Request) {
       faceShape = parsed.data.faceShape;
       bodyType = parsed.data.bodyType;
       profileId = parsed.data.profileId;
+      photoDataUrl = parsed.data.photoDataUrl;
 
       const photoCheck = validateLabSamplesForAnalysis(parsed.data.samples);
       if (!photoCheck.ok) {
@@ -113,13 +120,15 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         profileId: profileId ?? null,
-        resultJson: JSON.stringify(publicResult),
+        resultJson: JSON.stringify(
+          photoDataUrl ? { ...publicResult, historyPhoto: photoDataUrl } : publicResult,
+        ),
         faceShape: faceShape ?? null,
         bodyType: bodyType ?? null,
       },
     });
 
-    return NextResponse.json({ ...publicResult, analysisId: saved.id });
+    return NextResponse.json({ ...publicResult, analysisId: saved.id, hasPhoto: Boolean(photoDataUrl) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Analyze failed";
     return NextResponse.json({ error: message }, { status: 400 });

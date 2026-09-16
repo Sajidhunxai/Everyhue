@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FamilyProfile, SavedAnalysis } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
-import { saveLastResult } from "@/lib/last-result";
+import { saveLastResult, saveLastPhoto, saveLastAnalysisId } from "@/lib/last-result";
 import { Select } from "@/components/select";
 
 function formatWhen(iso: string) {
@@ -102,9 +102,20 @@ export default function HistoryPage() {
     });
   }, [rows, query, profiles]);
 
-  function openRow(row: SavedAnalysis) {
+  async function activate(row: SavedAnalysis, href: string) {
     saveLastResult(row.result);
-    router.push("/results");
+    saveLastAnalysisId(row.id);
+    let photo = row.photoDataUrl ?? null;
+    if (!photo && row.hasPhoto) {
+      const res = await fetch(`/api/analyses?id=${encodeURIComponent(row.id)}`, { credentials: "include" });
+      if (res.ok) {
+        const full = (await res.json()) as SavedAnalysis;
+        photo = full.photoDataUrl ?? null;
+      }
+    }
+    saveLastPhoto(photo);
+    if (!photo) toast("This older result has no saved photo. Upload it once in Look studio and we’ll keep it.", "info");
+    router.push(href);
   }
 
   function startEdit(row: SavedAnalysis) {
@@ -226,6 +237,7 @@ export default function HistoryPage() {
                         {profile ? ` · ${profile.name}` : ""}
                         {" · "}
                         {formatWhen(row.createdAt)}
+                        {row.hasPhoto ? " · photo saved" : " · no photo yet"}
                       </p>
                     </div>
                     <div className="swatch-row">
@@ -274,8 +286,11 @@ export default function HistoryPage() {
                     </div>
                   ) : (
                     <div className="actions">
-                      <button className="btn btn-primary" type="button" onClick={() => openRow(row)}>
+                      <button className="btn btn-primary" type="button" onClick={() => void activate(row, "/results")}>
                         Open
+                      </button>
+                      <button className="btn btn-primary" type="button" onClick={() => void activate(row, "/try-on")}>
+                        Try on
                       </button>
                       <button className="btn btn-secondary" type="button" onClick={() => startEdit(row)}>
                         Edit

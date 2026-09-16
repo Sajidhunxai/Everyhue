@@ -686,6 +686,21 @@ export async function fileToImage(file: File) {
   return { image, canvas, ctx };
 }
 
+export async function dataUrlToImage(dataUrl: string) {
+  const image = new Image();
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("Could not load saved photo"));
+    image.src = dataUrl;
+  });
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, image.naturalWidth || image.width);
+  canvas.height = Math.max(1, image.naturalHeight || image.height);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return { image, canvas, ctx };
+}
+
 export async function buildTryOnMasks(image: HTMLImageElement, canvas: HTMLCanvasElement): Promise<TryOnMasks> {
   const segmenter = await getSegmenter();
   const w = canvas.width;
