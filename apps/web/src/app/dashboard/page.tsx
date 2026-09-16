@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { DashboardView } from "@/components/dashboard-view";
+import { DashboardView, type DashboardLink } from "@/components/dashboard-view";
 import { prisma } from "@/lib/prisma";
 import { parseAnalysisJson } from "@/lib/auth-user";
 
@@ -13,6 +13,8 @@ export default async function DashboardPage() {
   let wardrobeCount = 0;
   let profileCount = 0;
   let latestSeason: string | null = null;
+  let undertone: string | null = null;
+  let palette: { hex: string; name: string }[] = [];
   let dbError: string | null = null;
 
   try {
@@ -28,87 +30,45 @@ export default async function DashboardPage() {
     analysisCount = a;
     wardrobeCount = w;
     profileCount = p;
-    latestSeason = latest
-      ? parseAnalysisJson(latest.resultJson).seasonLabel
-      : null;
+    if (latest) {
+      const parsed = parseAnalysisJson(latest.resultJson);
+      latestSeason = parsed.seasonLabel;
+      undertone = parsed.undertone;
+      palette = parsed.palette ?? [];
+    }
   } catch (e) {
     console.error("[dashboard] database error", e);
     dbError =
       "Database connection failed. Check Vercel DATABASE_URL / DIRECT_URL (use Supabase pooler region ap-southeast-2), then redeploy.";
   }
 
-  const links = [
-    {
-      href: "/analyze",
-      title: "Color analysis",
-      desc: "Upload a photo and get your seasonal palette",
-      icon: "◎",
-    },
-    {
-      href: "/compare",
-      title: "Compare photos",
-      desc: "Pick the best-lit photo before analyzing",
-      icon: "⇄",
-    },
-    {
-      href: "/match",
-      title: "Palette match",
-      desc: "Score any hex or garment color against your season",
-      icon: "▣",
-    },
-    {
-      href: "/beauty",
-      title: "Makeup & hair",
-      desc: "Lips, jewelry metals, and hair color hints",
-      icon: "◈",
-    },
-    {
-      href: "/looks",
-      title: "Saved looks",
-      desc: "Build outfits from wardrobe colors",
-      icon: "✦",
-    },
-    {
-      href: "/shop",
-      title: "Shop my palette",
-      desc: "Suits, shirts, and accessories in your colors",
-      icon: "◈",
-    },
+  const links: DashboardLink[] = [
+    { href: "/analyze", title: "Color analysis", desc: "Upload a daylight portrait for your season", icon: "analyze" },
+    { href: "/compare", title: "Compare photos", desc: "Choose the better-lit shot first", icon: "compare" },
+    { href: "/match", title: "Palette match", desc: "Score any hex against your colors", icon: "match" },
+    { href: "/beauty", title: "Makeup & hair", desc: "Lips, metals, and hair hints", icon: "beauty" },
+    { href: "/try-on", title: "Look studio", desc: "Preview hair, eyes, lips, and jewelry", icon: "tryon" },
+    { href: "/looks", title: "Saved looks", desc: "Build outfits from wardrobe colors", icon: "looks" },
+    { href: "/shop", title: "Shop my palette", desc: "Suits, shirts, and accessories", icon: "shop" },
     {
       href: "/wardrobe",
       title: "Wardrobe",
       desc: `${wardrobeCount} saved item${wardrobeCount === 1 ? "" : "s"}`,
-      icon: "▣",
+      icon: "wardrobe",
     },
     {
       href: "/profiles",
       title: "Family profiles",
       desc: `${profileCount} profile${profileCount === 1 ? "" : "s"}`,
-      icon: "◉",
+      icon: "family",
     },
-    {
-      href: "/stylist",
-      title: "AI stylist",
-      desc: "Ask outfit questions based on your palette",
-      icon: "✦",
-    },
-    {
-      href: "/quiz",
-      title: "Style quiz",
-      desc: "Personalized suits & wardrobe plan",
-      icon: "?",
-    },
+    { href: "/stylist", title: "AI stylist", desc: "Ask outfit questions in your palette", icon: "stylist" },
+    { href: "/quiz", title: "Style quiz", desc: "Suits, outfits, and a shopping plan", icon: "quiz" },
     {
       href: "/results",
       title: "Latest results",
       desc: latestSeason ? `Last: ${latestSeason}` : "No analysis yet",
-      icon: "◐",
-    },
-    {
-      href: "/account/delete",
-      title: "Delete account",
-      desc: "Remove all server data permanently",
-      icon: "×",
+      icon: "results",
     },
   ];
 
@@ -124,7 +84,7 @@ export default async function DashboardPage() {
       <DashboardView
         firstName={firstName}
         image={session.user.image ?? null}
-        stats={{ analysisCount, wardrobeCount, profileCount, latestSeason }}
+        stats={{ analysisCount, wardrobeCount, profileCount, latestSeason, undertone, palette }}
         links={links}
       />
     </>

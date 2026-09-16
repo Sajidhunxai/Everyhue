@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { WardrobeItem } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
+import { Select } from "@/components/select";
 
 const CATEGORIES = [
   "General",
@@ -103,13 +104,12 @@ export default function WardrobePage() {
         </label>
         <label>
           Category
-          <select value={category} onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}>
-            {CATEGORIES.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <Select
+            aria-label="Category"
+            value={category}
+            onChange={(v) => setCategory(v as (typeof CATEGORIES)[number])}
+            options={CATEGORIES.map((option) => ({ value: option, label: option }))}
+          />
         </label>
         <button className="btn btn-primary" type="submit">
           Add item

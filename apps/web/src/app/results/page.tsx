@@ -98,6 +98,9 @@ export default function ResultsPage() {
         <Link className="btn btn-primary" href="/beauty">
           Makeup &amp; hair
         </Link>
+        <Link className="btn btn-primary" href="/try-on">
+          Try hair &amp; eyes
+        </Link>
         <Link className="btn btn-secondary" href="/match">
           Match a color
         </Link>

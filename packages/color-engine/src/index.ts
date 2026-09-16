@@ -386,6 +386,7 @@ export function matchSeason(
 export { comparePhotos } from "./compare";
 export { shopForSeason, shopCategories, shopByHex, allShopItems } from "./shop";
 export { scoreHexAgainstPalette, scoreLookAgainstPalette } from "./palette-match";
+export { buildTryOnCatalog } from "./try-on";
 export { getFaceBodyTips, seasonFaceBodyNote } from "./face-body";
 export { stylistReply, stylistReplyWithAi } from "./stylist-chat";
 export {

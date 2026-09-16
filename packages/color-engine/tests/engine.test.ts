@@ -13,6 +13,7 @@ import {
 import { stylistReply } from "../src/stylist-chat";
 import { ENGINE_VERSION, matchSeason, srgbToLab } from "../src/index";
 import { scoreHexAgainstPalette, scoreLookAgainstPalette } from "../src/palette-match";
+import { buildTryOnCatalog } from "../src/try-on";
 
 describe("srgbToLab", () => {
   it("converts mid grey roughly to L~53 a~0 b~0", () => {
@@ -194,5 +195,16 @@ describe("palette match", () => {
     expect(good?.score).toBeGreaterThanOrEqual(85);
     expect(clash?.verdict).toBe("avoid");
     expect(scoreLookAgainstPalette(["#7B9FD4", "#F2D6C9"], palette, avoid)).toBeGreaterThan(70);
+  });
+});
+
+describe("try-on catalog", () => {
+  it("maps seasonal hair and makeup hints to hex colors", () => {
+    const result = matchSeason([srgbToLab(210, 150, 110)]);
+    const catalog = buildTryOnCatalog(result);
+    expect(catalog.look.hair).toMatch(/^#/);
+    expect(catalog.options.hair.length).toBeGreaterThan(0);
+    expect(catalog.options.lips.some((s) => s.recommended)).toBe(true);
+    expect(catalog.options.eyes.length).toBeGreaterThan(0);
   });
 });

@@ -6,6 +6,7 @@ const FEATURE_LINKS = [
   { href: "/compare", label: "Compare photos" },
   { href: "/match", label: "Palette match" },
   { href: "/beauty", label: "Makeup & hair" },
+  { href: "/try-on", label: "Look studio" },
   { href: "/shop", label: "Shop by season" },
   { href: "/wardrobe", label: "Wardrobe" },
   { href: "/looks", label: "Saved looks" },

@@ -5,7 +5,26 @@ import { Suspense, useEffect, useState } from "react";
 import type { AnalyzeResult, BodyType, FaceShape } from "@photomatcher/types";
 import { samplesFromImageFile } from "@/lib/image-samples";
 import { saveLastResult } from "@/lib/last-result";
+import { Select } from "@/components/select";
 import { useToast } from "@/components/toast";
+
+const FACE_OPTIONS = [
+  { value: "oval", label: "Oval" },
+  { value: "round", label: "Round" },
+  { value: "square", label: "Square" },
+  { value: "heart", label: "Heart" },
+  { value: "oblong", label: "Oblong" },
+  { value: "diamond", label: "Diamond" },
+] as const;
+
+const BODY_OPTIONS = [
+  { value: "balanced", label: "Balanced" },
+  { value: "pear", label: "Pear" },
+  { value: "apple", label: "Apple" },
+  { value: "hourglass", label: "Hourglass" },
+  { value: "rectangle", label: "Rectangle" },
+  { value: "inverted_triangle", label: "Inverted triangle" },
+] as const;
 
 type FamilyProfileOption = { id: string; name: string; relation: string };
 
@@ -90,39 +109,36 @@ function AnalyzeForm() {
         Optional face and body inputs unlock neckline, silhouette, and eyewear tips.
       </p>
 
-      <div className="form-grid">
+      <div className="form-grid form-grid-3">
         <label>
           Face shape
-          <select value={faceShape} onChange={(e) => setFaceShape(e.target.value as FaceShape)}>
-            <option value="oval">Oval</option>
-            <option value="round">Round</option>
-            <option value="square">Square</option>
-            <option value="heart">Heart</option>
-            <option value="oblong">Oblong</option>
-            <option value="diamond">Diamond</option>
-          </select>
+          <Select
+            aria-label="Face shape"
+            value={faceShape}
+            onChange={(v) => setFaceShape(v as FaceShape)}
+            options={[...FACE_OPTIONS]}
+          />
         </label>
         <label>
           Body type
-          <select value={bodyType} onChange={(e) => setBodyType(e.target.value as BodyType)}>
-            <option value="balanced">Balanced</option>
-            <option value="pear">Pear</option>
-            <option value="apple">Apple</option>
-            <option value="hourglass">Hourglass</option>
-            <option value="rectangle">Rectangle</option>
-            <option value="inverted_triangle">Inverted triangle</option>
-          </select>
+          <Select
+            aria-label="Body type"
+            value={bodyType}
+            onChange={(v) => setBodyType(v as BodyType)}
+            options={[...BODY_OPTIONS]}
+          />
         </label>
         <label>
           Family profile (optional)
-          <select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
-            <option value="">Myself</option>
-            {profiles.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.relation})
-              </option>
-            ))}
-          </select>
+          <Select
+            aria-label="Family profile"
+            value={profileId}
+            onChange={setProfileId}
+            options={[
+              { value: "", label: "Myself" },
+              ...profiles.map((p) => ({ value: p.id, label: `${p.name} (${p.relation})` })),
+            ]}
+          />
         </label>
       </div>
 

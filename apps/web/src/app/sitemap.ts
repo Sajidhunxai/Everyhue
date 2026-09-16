@@ -8,6 +8,7 @@ const publicRoutes: { path: string; changeFrequency: MetadataRoute.Sitemap[0]["c
   { path: "/compare", changeFrequency: "monthly", priority: 0.7 },
   { path: "/match", changeFrequency: "monthly", priority: 0.7 },
   { path: "/beauty", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/try-on", changeFrequency: "monthly", priority: 0.7 },
   { path: "/looks", changeFrequency: "monthly", priority: 0.6 },
   { path: "/shop", changeFrequency: "weekly", priority: 0.8 },
   { path: "/quiz", changeFrequency: "monthly", priority: 0.8 },

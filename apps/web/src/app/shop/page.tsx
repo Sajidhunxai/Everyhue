@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { AnalyzeResult, ShopItem } from "@photomatcher/types";
 import { loadLastResult } from "@/lib/last-result";
+import { Select } from "@/components/select";
 
 export default function ShopPage() {
   const [result, setResult] = useState<AnalyzeResult | null>(null);
@@ -41,14 +42,12 @@ export default function ShopPage() {
       </p>
       <label className="form-grid" style={{ maxWidth: "16rem" }}>
         Category
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="">All</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <Select
+          aria-label="Category"
+          value={category}
+          onChange={setCategory}
+          options={[{ value: "", label: "All" }, ...categories.map((c) => ({ value: c, label: c }))]}
+        />
       </label>
       <div className="shop-grid">
         {items.map((item) => (

@@ -61,6 +61,12 @@ const FEATURES = [
     swatches: ["#E07A7A", "#E8A87C", "#B8A8C8", "#1C2028"],
   },
   {
+    title: "Look studio",
+    desc: "Preview hair, eye, lip, and jewelry colors on a portrait or your photo.",
+    href: "/try-on",
+    swatches: ["#8B3A2A", "#C41C2C", "#D4A017", "#E8B896"],
+  },
+  {
     title: "Saved looks",
     desc: "Combine wardrobe colors into outfits scored against your palette.",
     href: "/looks",

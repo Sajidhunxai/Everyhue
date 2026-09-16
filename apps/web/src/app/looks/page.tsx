@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SavedLook, WardrobeItem } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
+import { Select } from "@/components/select";
 
 const OCCASIONS = [
   "Everyday",
@@ -114,13 +115,12 @@ export default function LooksPage() {
         </label>
         <label>
           Occasion
-          <select value={occasion} onChange={(e) => setOccasion(e.target.value as (typeof OCCASIONS)[number])}>
-            {OCCASIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <Select
+            aria-label="Occasion"
+            value={occasion}
+            onChange={(v) => setOccasion(v as (typeof OCCASIONS)[number])}
+            options={OCCASIONS.map((option) => ({ value: option, label: option }))}
+          />
         </label>
         <button className="btn btn-primary" type="submit" disabled={busy}>
           {busy ? "Saving…" : "Save look"}

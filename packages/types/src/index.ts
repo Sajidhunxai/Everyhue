@@ -59,6 +59,7 @@ export type UserPublic = {
   image: string | null;
 };
 
+export type { TryOnFeature, TryOnSwatch, TryOnLook, TryOnCatalog } from "./try-on";
 export type {
   FaceShape,
   BodyType,

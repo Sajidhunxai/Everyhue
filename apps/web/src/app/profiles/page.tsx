@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FamilyProfile } from "@photomatcher/types";
 import { useToast } from "@/components/toast";
+import { Select } from "@/components/select";
 
 const RELATIONS = ["Partner", "Child", "Parent", "Sibling", "Friend", "Other"] as const;
 
@@ -61,13 +62,12 @@ export default function ProfilesPage() {
         </label>
         <label>
           Relation
-          <select value={relation} onChange={(e) => setRelation(e.target.value as (typeof RELATIONS)[number])}>
-            {RELATIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <Select
+            aria-label="Relation"
+            value={relation}
+            onChange={(v) => setRelation(v as (typeof RELATIONS)[number])}
+            options={RELATIONS.map((option) => ({ value: option, label: option }))}
+          />
         </label>
         <button className="btn btn-primary" type="submit">
           Add profile

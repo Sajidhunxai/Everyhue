@@ -15,6 +15,7 @@ const NAV_LINKS = [
 
 const MORE_LINKS = [
   { href: "/beauty", label: "Makeup & hair" },
+  { href: "/try-on", label: "Look studio" },
   { href: "/looks", label: "Looks" },
   { href: "/quiz", label: "Style quiz" },
   { href: "/profiles", label: "Family" },

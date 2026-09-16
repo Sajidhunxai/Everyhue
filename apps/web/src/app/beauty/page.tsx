@@ -46,6 +46,9 @@ export default function BeautyPage() {
       </p>
       <ResultsDisplay result={result} beautyOnly />
       <div className="actions" style={{ marginTop: "1.5rem" }}>
+        <Link className="btn btn-primary" href="/try-on">
+          Try hair &amp; makeup
+        </Link>
         <Link className="btn btn-primary" href="/shop">
           Shop palette
         </Link>
