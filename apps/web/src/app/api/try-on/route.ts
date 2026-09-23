@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireDbUser } from "@/lib/auth-user";
 import { rateLimit } from "@/lib/rate-limit";
-import { renderTryOnAi } from "@/lib/try-on-ai-server";
+import { renderTryOnAi, TryOnAiError } from "@/lib/try-on-ai-server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -91,13 +91,16 @@ export async function POST(req: Request) {
   };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const image = await renderTryOnAi(bytes, file.type || "image/jpeg", look, enabledParsed.data);
-  if (!image) {
-    return NextResponse.json(
-      { error: "AI look studio is not available right now. Try again in a moment." },
-      { status: 503 },
-    );
+  try {
+    const image = await renderTryOnAi(bytes, file.type || "image/jpeg", look, enabledParsed.data);
+    return NextResponse.json({ image });
+  } catch (error) {
+    const message =
+      error instanceof TryOnAiError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : "AI look studio is not available right now.";
+    return NextResponse.json({ error: message }, { status: 503 });
   }
-
-  return NextResponse.json({ image });
 }

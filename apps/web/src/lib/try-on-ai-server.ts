@@ -1,6 +1,14 @@
+import { File } from "node:buffer";
 import type { TryOnFeature, TryOnLook } from "@photomatcher/types";
 
 export type TryOnEnabled = Record<TryOnFeature, boolean>;
+
+export class TryOnAiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TryOnAiError";
+  }
+}
 
 function hexName(hex: string) {
   return hex.replace("#", "").toUpperCase();
@@ -44,6 +52,122 @@ export function buildTryOnPrompt(look: TryOnLook, enabled: TryOnEnabled) {
 
   parts.push("Output a realistic edited photograph, not an illustration.");
   return parts.join(" ");
+}
+
+function openaiMessage(payload: unknown, status: number) {
+  const body = payload as {
+    error?: { message?: string; code?: string; type?: string };
+    message?: string;
+  };
+  const text = body.error?.message || body.message || `OpenAI image edit failed (${status})`;
+  if (/verif/i.test(text) || /organization/i.test(text)) {
+    return "OpenAI image models need organization verification. Open platform.openai.com → Settings → Organization → Verify.";
+  }
+  if (/invalid.?api.?key|incorrect api key|authentication/i.test(text)) {
+    return "OpenAI rejected the API key. Check OPENAI_API_KEY on Vercel and redeploy.";
+  }
+  if (/quota|billing|insufficient/i.test(text)) {
+    return "OpenAI billing or quota blocked image edits. Add credit on platform.openai.com.";
+  }
+  if (/model/i.test(text) && /not found|does not exist|not available/i.test(text)) {
+    return "This OpenAI account cannot use GPT Image yet. Verify the org or enable gpt-image-1 / gpt-image-1-mini.";
+  }
+  return text.slice(0, 240);
+}
+
+function extractImage(payload: unknown): string | null {
+  const data = payload as {
+    data?: { b64_json?: string; url?: string }[];
+    output?: { type?: string; result?: string; b64_json?: string }[];
+  };
+  if (data.data?.[0]?.b64_json) return `data:image/png;base64,${data.data[0].b64_json}`;
+  if (data.data?.[0]?.url) return data.data[0].url;
+  const part = data.output?.find((item) => item.b64_json || item.result);
+  if (part?.b64_json) return `data:image/png;base64,${part.b64_json}`;
+  if (part?.result) return `data:image/png;base64,${part.result}`;
+  return null;
+}
+
+async function editWithMultipart(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  imageBytes: Uint8Array,
+  mimeType: string,
+  fieldName: string,
+) {
+  const ext = mimeType.includes("png") ? "png" : "jpg";
+  const file = new File([Buffer.from(imageBytes)], `portrait.${ext}`, { type: mimeType });
+  const form = new FormData();
+  form.set("model", model);
+  form.set("prompt", prompt);
+  form.set("size", "1024x1024");
+  form.set("quality", "low");
+  form.append(fieldName, file);
+
+  const res = await fetch("https://api.openai.com/v1/images/edits", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: form,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return { image: null as string | null, error: openaiMessage(json, res.status) };
+  return { image: extractImage(json), error: null as string | null };
+}
+
+async function editWithJson(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  imageBytes: Uint8Array,
+  mimeType: string,
+) {
+  const b64 = Buffer.from(imageBytes).toString("base64");
+  const res = await fetch("https://api.openai.com/v1/images/edits", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      prompt,
+      size: "1024x1024",
+      quality: "low",
+      image: `data:${mimeType};base64,${b64}`,
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return { image: null as string | null, error: openaiMessage(json, res.status) };
+  return { image: extractImage(json), error: null as string | null };
+}
+
+export async function renderTryOnWithOpenAi(
+  imageBytes: Uint8Array,
+  mimeType: string,
+  look: TryOnLook,
+  enabled: TryOnEnabled,
+  apiKey: string,
+) {
+  const prompt = buildTryOnPrompt(look, enabled);
+  const models = ["gpt-image-1-mini", "gpt-image-1", "gpt-image-1.5"];
+  let lastError = "OpenAI could not edit that photo.";
+
+  for (const model of models) {
+    const json = await editWithJson(apiKey, model, prompt, imageBytes, mimeType);
+    if (json.image) return json.image;
+    if (json.error) lastError = json.error;
+
+    const multi = await editWithMultipart(apiKey, model, prompt, imageBytes, mimeType, "image[]");
+    if (multi.image) return multi.image;
+    if (multi.error) lastError = multi.error;
+
+    const single = await editWithMultipart(apiKey, model, prompt, imageBytes, mimeType, "image");
+    if (single.image) return single.image;
+    if (single.error) lastError = single.error;
+  }
+
+  throw new TryOnAiError(lastError);
 }
 
 function extractGeminiImage(payload: unknown): string | null {
@@ -94,36 +218,6 @@ export async function renderTryOnWithGemini(
   return null;
 }
 
-export async function renderTryOnWithOpenAi(
-  imageBytes: Uint8Array,
-  mimeType: string,
-  look: TryOnLook,
-  enabled: TryOnEnabled,
-  apiKey: string,
-) {
-  const prompt = buildTryOnPrompt(look, enabled);
-  const ext = mimeType.includes("png") ? "png" : "jpg";
-  const form = new FormData();
-  form.set("model", "gpt-image-1");
-  form.set("prompt", prompt);
-  form.set("size", "1024x1024");
-  form.append(
-    "image",
-    new Blob([Buffer.from(imageBytes)], { type: mimeType }),
-    `portrait.${ext}`,
-  );
-
-  const res = await fetch("https://api.openai.com/v1/images/edits", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: form,
-  });
-  if (!res.ok) return null;
-  const data = (await res.json()) as { data?: { b64_json?: string; url?: string }[] };
-  if (data.data?.[0]?.b64_json) return `data:image/png;base64,${data.data[0].b64_json}`;
-  return data.data?.[0]?.url ?? null;
-}
-
 export async function renderTryOnAi(
   imageBytes: Uint8Array,
   mimeType: string,
@@ -133,13 +227,16 @@ export async function renderTryOnAi(
   const gemini = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
   const openai = process.env.OPENAI_API_KEY?.trim();
 
+  if (!gemini && !openai) {
+    throw new TryOnAiError("No image AI key on the server. Add OPENAI_API_KEY on Vercel and redeploy.");
+  }
+
   if (gemini) {
     const image = await renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
     if (image) return image;
   }
   if (openai) {
-    const image = await renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai);
-    if (image) return image;
+    return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai);
   }
-  return null;
+  throw new TryOnAiError("Gemini image edit failed and no OpenAI key is set.");
 }
