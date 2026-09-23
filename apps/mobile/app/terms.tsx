@@ -3,31 +3,28 @@ import { Link } from "expo-router";
 import { theme } from "@/lib/theme";
 
 const RULES = [
-  "You must be old enough to use Google Play / App Store accounts in your region.",
-  "Do not upload photos of others without permission.",
-  "Do not abuse the API (scraping, automated spam, or reverse engineering for harm).",
-  "You may delete your account at any time from the Delete account screen.",
-  "We may update features; continued use means you accept the updated terms.",
+  "You must be 13 or older.",
+  "Results are estimates for entertainment, not professional or medical advice.",
+  "Do not upload photos of others without permission, or sexual / exploitative images.",
+  "Look studio may send your photo to our servers and Google Gemini to recolor hair, eyes, lips, and clothes.",
+  "You may delete your account anytime from Delete account.",
+  "Continued use means you accept updates to these terms.",
 ] as const;
 
 export default function TermsScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Terms of use</Text>
-      <Text style={styles.muted}>Last updated: August 28, 2026</Text>
+      <Text style={styles.muted}>Last updated: September 23, 2026</Text>
       <Text style={styles.lead}>
         Every Hue provides personal color and style suggestions for entertainment
-        and education. Results are estimates, not professional colorimetry or
-        medical advice.
+        and education.
       </Text>
       {RULES.map((rule) => (
         <Text key={rule} style={styles.bullet}>
           • {rule}
         </Text>
       ))}
-      <Text style={styles.muted}>
-        Have counsel review before a public launch.
-      </Text>
       <Link href="/privacy" style={styles.link}>
         Privacy policy
       </Link>

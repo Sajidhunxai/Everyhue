@@ -1,4 +1,3 @@
-import * as ImagePicker from "expo-image-picker";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
@@ -12,6 +11,7 @@ import { useAuth } from "@/lib/auth-context";
 import { samplesFromImageUri } from "@/lib/image-samples";
 import { saveLastAnalysis } from "@/lib/last-analysis";
 import { saveLastPhoto } from "@/lib/last-photo";
+import { pickCameraImage, pickLibraryImage } from "@/lib/pick-image";
 import { theme } from "@/lib/theme";
 import { type } from "@/lib/type";
 
@@ -32,27 +32,21 @@ export default function AnalyzeScreen() {
     const token = accessToken;
     if (!token) return;
     setError(null);
-    const permission = fromCamera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError("Permission is required.");
+    const asset = fromCamera ? await pickCameraImage(0.7) : await pickLibraryImage(0.7);
+    if (!asset) {
+      setError(fromCamera ? "Camera permission is required." : "Choose a photo to continue.");
       return;
     }
-    const result = fromCamera
-      ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
-      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
-    if (result.canceled || !result.assets[0]) return;
 
     setBusy(true);
     try {
-      const samples = await samplesFromImageUri(result.assets[0].uri);
+      const samples = await samplesFromImageUri(asset.uri);
       const data = await analyzeWithOptions(token, samples, {
         faceShape,
         bodyType,
         profileId: typeof profileId === "string" ? profileId : undefined,
       });
-      await saveLastPhoto(result.assets[0].uri);
+      await saveLastPhoto(asset.uri);
       await saveLastAnalysis(data);
       router.push({ pathname: "/results", params: { payload: JSON.stringify(data) } });
     } catch (e) {
@@ -68,7 +62,8 @@ export default function AnalyzeScreen() {
         <Text style={type.kicker}>Color analysis</Text>
         <Text style={type.title}>Analyze</Text>
         <Text style={type.lead}>
-          Use daylight on your face. We verify the photo looks like a person before analyzing.
+          Use daylight on your face. The photo stays on this device for sampling
+          and may be saved with your analysis. We do not use it for ads.
         </Text>
       </FadeIn>
       {profileId ? <Text style={type.label}>Saving to family profile</Text> : null}

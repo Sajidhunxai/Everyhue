@@ -85,7 +85,21 @@ export function TryOnStudio({ photoUri, catalog, seasonLabel }: Props) {
             domStorageEnabled
             allowsInlineMediaPlayback
             setSupportMultipleWindows={false}
-            originWhitelist={["*"]}
+            originWhitelist={["https://*", "http://*"]}
+            onShouldStartLoadWithRequest={(request) => {
+              try {
+                const host = new URL(request.url).hostname;
+                return (
+                  host === "asktheimageguru.com" ||
+                  host.endsWith(".asktheimageguru.com") ||
+                  host === "cdn.jsdelivr.net" ||
+                  host.endsWith(".googleapis.com") ||
+                  host.endsWith(".google.com")
+                );
+              } catch {
+                return request.url.startsWith("about:") || request.url.startsWith("data:");
+              }
+            }}
             style={styles.web}
           />
         ) : (

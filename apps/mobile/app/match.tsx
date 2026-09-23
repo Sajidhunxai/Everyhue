@@ -1,6 +1,5 @@
 import { labToHex, scoreHexAgainstPalette } from "@photomatcher/color-engine";
 import type { AnalyzeResult, PaletteMatch } from "@photomatcher/types";
-import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -9,6 +8,7 @@ import { FadeIn } from "@/components/fade-in";
 import { Screen } from "@/components/screen";
 import { samplesFromImageUri } from "@/lib/image-samples";
 import { loadLastAnalysis } from "@/lib/last-analysis";
+import { pickLibraryImage } from "@/lib/pick-image";
 import { theme } from "@/lib/theme";
 import { type } from "@/lib/type";
 
@@ -49,16 +49,11 @@ export default function MatchScreen() {
 
   async function fromPhoto() {
     if (!analysis) return;
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError("Photo permission is required.");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
-    if (result.canceled || !result.assets[0]) return;
+    const result = await pickLibraryImage(0.7);
+    if (!result) return;
     setBusy(true);
     try {
-      const samples = await samplesFromImageUri(result.assets[0].uri);
+      const samples = await samplesFromImageUri(result.uri);
       score(labToHex(samples[0]));
     } catch {
       setError("Could not read that photo.");

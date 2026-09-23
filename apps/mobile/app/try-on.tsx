@@ -1,6 +1,5 @@
 import { buildTryOnCatalog } from "@photomatcher/color-engine";
 import type { AnalyzeResult } from "@photomatcher/types";
-import * as ImagePicker from "expo-image-picker";
 import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
@@ -11,6 +10,7 @@ import { TryOnStudio } from "@/components/try-on-studio";
 import { useAuth } from "@/lib/auth-context";
 import { loadLastAnalysis } from "@/lib/last-analysis";
 import { loadLastPhoto, saveLastPhoto } from "@/lib/last-photo";
+import { pickLibraryImage } from "@/lib/pick-image";
 import { theme } from "@/lib/theme";
 import { type } from "@/lib/type";
 
@@ -36,11 +36,9 @@ export default function TryOnScreen() {
   const catalog = useMemo(() => (result ? buildTryOnCatalog(result) : null), [result]);
 
   async function pickPhoto() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
-    const picked = await ImagePicker.launchImageLibraryAsync({ quality: 0.85 });
-    if (picked.canceled || !picked.assets[0]) return;
-    await saveLastPhoto(picked.assets[0].uri);
+    const picked = await pickLibraryImage(0.85);
+    if (!picked) return;
+    await saveLastPhoto(picked.uri);
     setPhotoUri(await loadLastPhoto());
   }
 
@@ -76,8 +74,8 @@ export default function TryOnScreen() {
         <Text style={type.kicker}>{result.seasonLabel}</Text>
         <Text style={type.title}>Look studio</Text>
         <Text style={type.lead}>
-          Same Look studio as the website: MediaPipe finds hair, eyes, lips, and clothes, then
-          recolors them. Pick a swatch after the face is found.
+          Same Look studio as the website. Your portrait may be sent to our site
+          and Google Gemini to recolor hair, eyes, lips, and clothes.
         </Text>
       </FadeIn>
       <AppButton variant="secondary" onPress={() => void pickPhoto()}>

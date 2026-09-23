@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { getApiBaseUrl } from "@/lib/config";
 import { useAuth } from "@/lib/auth-context";
 
@@ -13,23 +13,38 @@ export default function AccountDeleteScreen() {
 
   async function deleteAccount() {
     if (!accessToken) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`${getApiBaseUrl()}/api/account`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (!res.ok && res.status !== 401) {
-        throw new Error(await res.text());
-      }
-      await signOut();
-      router.replace("/login");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Delete failed");
-    } finally {
-      setBusy(false);
-    }
+    Alert.alert(
+      "Delete account?",
+      "This permanently deletes your analyses, photos saved with history, wardrobe, family profiles, and chat. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            void (async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                const res = await fetch(`${getApiBaseUrl()}/api/account`, {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                });
+                if (!res.ok && res.status !== 401) {
+                  throw new Error(await res.text());
+                }
+                await signOut();
+                router.replace("/login");
+              } catch (e) {
+                setError(e instanceof Error ? e.message : "Delete failed");
+              } finally {
+                setBusy(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
   }
 
   return (

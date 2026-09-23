@@ -226,7 +226,7 @@ export default function LoginScreen() {
             ) : null}
 
             <Text style={styles.legal}>
-              By signing in you agree to our{" "}
+              You must be 13 or older. By signing in you agree to our{" "}
               <Link href="/terms" style={styles.legalLink}>
                 Terms
               </Link>{" "}

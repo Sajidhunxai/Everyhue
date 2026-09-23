@@ -62,12 +62,13 @@ Auth setup (do these before / with store submit):
 
 ## Data safety (declare accurately)
 
-| Data | Collected | Purpose |
-|------|-----------|---------|
-| Name, email, photo (avatar) | Yes (Google / Facebook / email account) | Account |
-| Photos / camera | Yes (permission) | Color analysis (images not stored server-side in current version) |
-| App activity (analyses, wardrobe, chat) | Yes | App features |
-| Account deletion | Supported | In-app + web |
+| Data | Collected | Shared | Purpose |
+|------|-----------|--------|---------|
+| Name, email, avatar | Yes (Google / Facebook / email) | Sign-in providers | Account |
+| Photos / camera | Yes (user-chosen only) | Our API; Google Gemini for Look studio; optional OpenAI | Analysis + try-on |
+| App activity (analyses, wardrobe, chat) | Yes | Hosting / optional OpenAI for stylist | App features |
+| Ads / advertising ID | No | — | Declare “no” in Play Console |
+| Account deletion | Supported | — | In-app + https://www.asktheimageguru.com/account/delete |
 
 ---
 

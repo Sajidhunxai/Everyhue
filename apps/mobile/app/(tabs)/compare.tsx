@@ -1,5 +1,4 @@
 import type { CompareResult } from "@photomatcher/types";
-import * as ImagePicker from "expo-image-picker";
 import { Redirect } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -7,6 +6,7 @@ import { AppButton } from "@/components/app-button";
 import { compareWithApi } from "@/lib/compare-api";
 import { samplesFromImageUri } from "@/lib/image-samples";
 import { useAuth } from "@/lib/auth-context";
+import { pickLibraryImage } from "@/lib/pick-image";
 import { theme } from "@/lib/theme";
 
 export default function CompareScreen() {
@@ -21,15 +21,10 @@ export default function CompareScreen() {
 
   async function pick(slot: "A" | "B") {
     setError(null);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError("Gallery permission is required.");
-      return;
-    }
-    const picked = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
-    if (picked.canceled || !picked.assets[0]) return;
-    if (slot === "A") setUriA(picked.assets[0].uri);
-    else setUriB(picked.assets[0].uri);
+    const picked = await pickLibraryImage(0.7);
+    if (!picked) return;
+    if (slot === "A") setUriA(picked.uri);
+    else setUriB(picked.uri);
     setResult(null);
   }
 
