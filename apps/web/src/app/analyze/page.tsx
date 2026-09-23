@@ -150,7 +150,7 @@ function AnalyzeForm() {
         {busy ? "Analyzing…" : "Choose photo"}
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           hidden
           disabled={busy}
           onChange={(e) => onFile(e.target.files?.[0] ?? null)}

@@ -119,6 +119,21 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PATCH(req: Request) {
+  const admin = await requireAdmin(req);
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = (await req.json().catch(() => null)) as { id?: string; published?: boolean } | null;
+  if (!body?.id || typeof body.published !== "boolean") {
+    return NextResponse.json({ error: "Need id and published." }, { status: 400 });
+  }
+  try {
+    const row = await table().update({ where: { id: body.id }, data: { published: body.published } });
+    return NextResponse.json(parse(row));
+  } catch {
+    return NextResponse.json({ error: "Could not update quiz." }, { status: 503 });
+  }
+}
+
 export async function DELETE(req: Request) {
   const admin = await requireAdmin(req);
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

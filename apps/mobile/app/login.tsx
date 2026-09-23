@@ -93,7 +93,7 @@ export default function LoginScreen() {
     }
   }
 
-  if (user) return <Redirect href="/(tabs)" />;
+  if (user) return <Redirect href="/" />;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   back: { alignSelf: "flex-start", marginBottom: 12 },
-  backText: { color: theme.muted, fontSize: 15 },
+  backText: { color: theme.muted, fontSize: 15, fontFamily: "Manrope_500Medium" },
   card: {
     borderWidth: 1,
     borderColor: theme.line,
@@ -277,9 +277,9 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: "rgba(28,32,40,0.92)",
   },
-  title: { color: theme.ink, fontSize: 28, fontWeight: "600" },
-  lead: { color: theme.muted, lineHeight: 22 },
-  benefit: { color: theme.muted, fontSize: 14, lineHeight: 22 },
+  title: { color: theme.ink, fontSize: 28, fontFamily: "Fraunces_600SemiBold" },
+  lead: { color: theme.muted, lineHeight: 22, fontFamily: "Manrope_400Regular" },
+  benefit: { color: theme.muted, fontSize: 14, lineHeight: 22, fontFamily: "Manrope_400Regular" },
   swatchRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 4 },
   swatch: {
     width: 32,
@@ -298,6 +298,7 @@ const styles = StyleSheet.create({
     color: theme.ink,
     backgroundColor: "rgba(18,20,26,0.65)",
     fontSize: 16,
+    fontFamily: "Manrope_400Regular",
   },
   switchMode: {
     color: theme.primary,

@@ -1,0 +1,35 @@
+Every Hue — Play Store listing (member app only, no admin)
+
+Short description (max 80 characters)
+Find your seasonal colors, shop matching shades, and try looks on your photo.
+
+Full description
+Every Hue is a personal color and style app. Take a daylight photo, get your seasonal palette, and use it across outfits, shopping, and makeup.
+
+What you can do
+• Analyze your colors from a front-facing photo
+• Compare two looks
+• Match a clothing color to your palette
+• Shop shades that fit your season
+• Save a wardrobe
+• Take the style quiz
+• Try hair and makeup colors in Look studio
+• Keep history of past analyses
+• Add family profiles and ask the stylist
+
+Sign in with Google to save your results. Privacy policy: https://www.asktheimageguru.com/privacy
+
+This Play Store app is for members. Staff admin is not included.
+
+App name: Every Hue
+Package name: com.asktheimageguru.everyhue
+Category: Lifestyle
+Website: https://www.asktheimageguru.com
+Privacy: https://www.asktheimageguru.com/privacy
+Support email: support@asktheimageguru.com
+
+Graphics
+• App icon: apps/web/public/icons/icon-512.png
+• Feature graphic: 1024 x 500 PNG (make from your hero image)
+• Phone screenshots: at least 2, up to 8 (1080 x 1920 works)
+• 7-inch / 10-inch tablet screenshots: optional but helpful

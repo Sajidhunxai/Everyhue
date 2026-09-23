@@ -8,7 +8,8 @@ $src = if ($env:PHOTOMATCHER_SRC) { $env:PHOTOMATCHER_SRC } else { (Resolve-Path
 $buildRoot = if ($env:PHOTOMATCHER_BUILD_ROOT) { $env:PHOTOMATCHER_BUILD_ROOT } else { "C:\pm" }
 $javaHome = if ($env:JAVA_HOME) { $env:JAVA_HOME } else { "C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot" }
 $sdkRoot = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { Join-Path $env:LOCALAPPDATA "Android\Sdk" }
-$gradleHome = if ($env:GRADLE_USER_HOME) { $env:GRADLE_USER_HOME } else { "C:\gradle-home" }
+$gradleHome = if ($env:PHOTOMATCHER_GRADLE_HOME) { $env:PHOTOMATCHER_GRADLE_HOME } else { "C:\g" }
+$tempHome = "C:\tmp"
 
 Write-Host "Source:    $src"
 Write-Host "Build dir: $buildRoot"
@@ -25,6 +26,13 @@ if (-not (Test-Path (Join-Path $sdkRoot "platform-tools\adb.exe"))) {
 $env:JAVA_HOME = $javaHome
 $env:ANDROID_HOME = $sdkRoot
 $env:GRADLE_USER_HOME = $gradleHome
+$env:EXPO_PUBLIC_API_URL = "https://www.asktheimageguru.com"
+$env:EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = "505236505372-8g9ouj623fiv0ppamal3ffq6g0dprig7.apps.googleusercontent.com"
+$env:EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID = "505236505372-ju410i6i5gbf3n6i4fahfuhjkc1r3nov.apps.googleusercontent.com"
+New-Item -ItemType Directory -Force -Path $gradleHome | Out-Null
+New-Item -ItemType Directory -Force -Path $tempHome | Out-Null
+$env:TEMP = $tempHome
+$env:TMP = $tempHome
 $env:Path = "$javaHome\bin;$sdkRoot\platform-tools;$env:Path"
 
 function Stop-GradleDaemons {
@@ -64,6 +72,24 @@ try {
   npx expo prebuild --platform android --clean
   if ($LASTEXITCODE -ne 0) { throw "expo prebuild failed" }
 
+  $appGradle = Join-Path (Get-Location) "android\app\build.gradle"
+  $gradleText = Get-Content $appGradle -Raw
+  if ($gradleText -notmatch '--entry-file", "apps/mobile/index.js') {
+    $gradleText = $gradleText.Replace(
+      '// extraPackagerArgs = []',
+      'extraPackagerArgs = ["--entry-file", "apps/mobile/index.js"]'
+    )
+    Write-Host "Patched extraPackagerArgs for pnpm workspace Metro root"
+  }
+  if ($gradleText -notmatch "debuggableVariants = \[\]") {
+    $gradleText = $gradleText.Replace(
+      'bundleCommand = "export:embed"',
+      "bundleCommand = `"export:embed`"`r`n    debuggableVariants = []"
+    )
+    Write-Host "Patched app/build.gradle to embed JS in debug APK"
+  }
+  Set-Content -Path $appGradle -Value $gradleText -NoNewline
+
   Push-Location android
   Write-Host "gradlew assembleDebug"
   .\gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon
@@ -72,11 +98,14 @@ try {
   $apk = Resolve-Path "app\build\outputs\apk\debug\app-debug.apk"
   $desktop = [Environment]::GetFolderPath("Desktop")
   $dest = Join-Path $desktop "EveryHue-debug.apk"
+  $repoCopy = Join-Path $src "EveryHue-debug.apk"
   Copy-Item -Force $apk $dest
+  Copy-Item -Force $apk $repoCopy
   Write-Host ""
   Write-Host "SUCCESS"
   Write-Host "  APK: $apk"
   Write-Host "  Copied to: $dest"
+  Write-Host "  Also: $repoCopy"
 }
 finally {
   Pop-Location -ErrorAction SilentlyContinue

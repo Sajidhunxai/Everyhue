@@ -110,12 +110,12 @@ const styles = StyleSheet.create({
   kicker: {
     color: theme.primary,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    fontSize: 12,
-    fontWeight: "700",
+    letterSpacing: 1.6,
+    fontSize: 11,
+    fontFamily: "Manrope_700Bold",
   },
-  title: { color: theme.ink, fontSize: 26, fontWeight: "600" },
-  lead: { color: theme.muted, lineHeight: 20, fontSize: 14 },
+  title: { color: theme.ink, fontSize: 28, fontFamily: "Fraunces_600SemiBold" },
+  lead: { color: theme.muted, lineHeight: 20, fontSize: 14, fontFamily: "Manrope_400Regular" },
   input: {
     borderWidth: 1,
     borderColor: theme.lineStrong,
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     padding: 12,
     color: theme.ink,
     backgroundColor: theme.surface,
+    fontFamily: "Manrope_400Regular",
     marginTop: 4,
   },
   userBubble: {

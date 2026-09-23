@@ -22,4 +22,5 @@ coverage
 Thumbs.db
 android
 ios
-web-build
+*.apk
+EveryHue-debug.apk

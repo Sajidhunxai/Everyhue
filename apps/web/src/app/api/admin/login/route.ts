@@ -11,7 +11,7 @@ import {
 import { verifyPassword } from "@/lib/password";
 
 const bodySchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
   password: z.string().min(1).max(128),
 });
 
@@ -22,11 +22,12 @@ export async function POST(req: Request) {
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Enter email and password." }, { status: 400 });
+    return NextResponse.json({ error: "Enter the admin password." }, { status: 400 });
   }
 
   const admin = await ensureAdminUser();
-  if (parsed.data.email.trim().toLowerCase() !== adminEmail()) {
+  const email = (parsed.data.email || adminEmail()).trim().toLowerCase();
+  if (email !== adminEmail()) {
     return NextResponse.json({ error: "Invalid admin login." }, { status: 401 });
   }
   if (!admin.passwordHash || !verifyPassword(parsed.data.password, admin.passwordHash)) {

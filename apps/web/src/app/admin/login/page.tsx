@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const ADMIN_EMAIL = "admin@everyhue.app";
+
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@everyhue.app");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: ADMIN_EMAIL, password }),
     });
     setBusy(false);
     if (!res.ok) {
@@ -34,12 +35,12 @@ export default function AdminLoginPage() {
     <section className="admin-login panel">
       <p className="section-kicker">Staff only</p>
       <h1>Admin login</h1>
-      <p className="lead">Manage users and create extra quizzes for Every Hue.</p>
+      <p className="lead">The admin account is already set. Enter the password to manage users and quizzes.</p>
       <form className="form-grid" onSubmit={onSubmit}>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
-        </label>
+        <div className="admin-locked-email">
+          <span>Email</span>
+          <strong>{ADMIN_EMAIL}</strong>
+        </div>
         <label>
           Password
           <input
@@ -47,7 +48,9 @@ export default function AdminLoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoFocus
             autoComplete="current-password"
+            placeholder="Enter admin password"
           />
         </label>
         {error ? <p className="error">{error}</p> : null}

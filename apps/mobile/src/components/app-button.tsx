@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
   },
   disabled: { opacity: 0.5 },
-  primaryText: { color: theme.onPrimary, fontWeight: "700", fontSize: 16 },
-  secondaryText: { color: theme.ink, fontWeight: "600", fontSize: 15 },
-  ghostText: { color: theme.muted, fontWeight: "600", fontSize: 15 },
-  googleText: { color: "#1f1f1f", fontWeight: "700", fontSize: 16 },
+  primaryText: { color: theme.onPrimary, fontWeight: "700", fontSize: 16, fontFamily: "Manrope_700Bold" },
+  secondaryText: { color: theme.ink, fontWeight: "600", fontSize: 15, fontFamily: "Manrope_600SemiBold" },
+  ghostText: { color: theme.muted, fontWeight: "600", fontSize: 15, fontFamily: "Manrope_600SemiBold" },
+  googleText: { color: "#1f1f1f", fontWeight: "700", fontSize: 16, fontFamily: "Manrope_700Bold" },
 });

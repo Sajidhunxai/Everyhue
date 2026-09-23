@@ -35,15 +35,8 @@ export default function BeautyPage() {
     );
   }
 
-  const guide = result.styleGuide;
-
   return (
     <section className="panel results-panel">
-      <p className="muted">{result.seasonLabel}</p>
-      <h1>Makeup &amp; hair</h1>
-      <p className="lead">
-        Beauty and metal notes for a {result.undertone} undertone with {guide.contrastLevel} contrast.
-      </p>
       <ResultsDisplay result={result} beautyOnly />
       <div className="actions" style={{ marginTop: "1.5rem" }}>
         <Link className="btn btn-primary" href="/try-on">

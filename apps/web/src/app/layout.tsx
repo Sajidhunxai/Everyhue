@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import { auth, signOut } from "@/auth";
 import { AppProviders } from "@/components/app-providers";
@@ -26,6 +26,13 @@ const manrope = Manrope({
   variable: "--font-manrope",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#12141A",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   ...buildMetadata({
@@ -38,13 +45,20 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   applicationName: siteConfig.name,
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   authors: [{ name: siteConfig.name, url: getSiteUrl() }],
   creator: siteConfig.name,
   publisher: siteConfig.name,
   category: "lifestyle",
   formatDetection: { telephone: false, email: false, address: false },
   icons: {
-    icon: [{ url: "/favicon.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
     apple: [{ url: "/apple-touch-icon.png" }],
     shortcut: "/favicon.png",
   },

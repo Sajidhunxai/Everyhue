@@ -128,7 +128,7 @@ export function softwareApplicationJsonLd() {
     "@type": "SoftwareApplication",
     name: siteConfig.name,
     applicationCategory: "LifestyleApplication",
-    operatingSystem: "Web, Android",
+    operatingSystem: "Web, iOS, Android",
     url: site,
     description: siteConfig.description,
     offers: {
@@ -144,6 +144,8 @@ export function softwareApplicationJsonLd() {
       "Family profiles",
       "AI stylist chat",
       "Style quiz",
+      "Look studio try-on",
+      "Analysis history",
     ],
   };
 }

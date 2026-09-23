@@ -1,13 +1,12 @@
-import { analyzeLab } from "@photomatcher/api-client";
 import type { AnalyzeResult, BodyType, FaceShape } from "@photomatcher/types";
+import { getApiBaseUrl } from "@/lib/config";
 
 export async function analyzeWithOptions(
   accessToken: string,
   samples: { L: number; a: number; b: number }[],
   options?: { faceShape?: FaceShape; bodyType?: BodyType; profileId?: string },
 ): Promise<AnalyzeResult> {
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
-  const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/analyze`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/analyze`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

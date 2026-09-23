@@ -112,7 +112,7 @@ export default function MatchPage() {
           Sample from a photo
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             disabled={busy}
             onChange={(e) => void fromPhoto(e.target.files?.[0] ?? null)}
           />

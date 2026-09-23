@@ -1,0 +1,99 @@
+Play Store — React Native app (Every Hue)
+
+This is the native Expo / React Native app in apps/mobile.
+It is NOT PWABuilder and NOT a website wrapper.
+Admin is not in this app.
+
+What members get
+• Sign in / sign up (email + Google)
+• Analyze, Compare, Match, Shop, Wardrobe
+• History, Family, Stylist, Style quiz
+• Results PDF export
+
+------------------------------------------------
+1. One-time Play Console
+------------------------------------------------
+https://play.google.com/console/signup
+Pay $25. Create app:
+  Name: Every Hue
+  App
+  Free
+  Package already in app.json: com.asktheimageguru.everyhue
+
+Privacy policy: https://www.asktheimageguru.com/privacy
+
+------------------------------------------------
+2. Install EAS (once)
+------------------------------------------------
+npm i -g eas-cli
+cd apps/mobile
+npx eas login
+npx eas whoami
+
+You already have an EAS project id in app.json.
+
+------------------------------------------------
+3. Production API URL
+------------------------------------------------
+Play builds use:
+  EXPO_PUBLIC_API_URL=https://www.asktheimageguru.com
+
+Set in eas.json production.env (already added).
+The website must be live so login, analyze, and history work.
+
+------------------------------------------------
+4. Build the Play file (.aab)
+------------------------------------------------
+From repo root:
+
+pnpm --filter @photomatcher/mobile build:aab
+
+Or:
+
+cd apps/mobile
+npx eas build --profile production --platform android
+
+EAS builds in the cloud and gives a download link for
+app-release.aab  (this is the file Play Console wants).
+
+First Android build will ask to generate a keystore. Let EAS manage it.
+Do not lose the Expo account — that keystore is your Play signing key unless you upload your own.
+
+------------------------------------------------
+5. Upload in Play Console
+------------------------------------------------
+Release → Testing → Internal testing → Create release
+Upload the .aab
+Add release notes, e.g. "First Every Hue Android release."
+Review and start rollout to yourself.
+
+Then complete:
+• Store listing (use play-store/listing.txt)
+• Graphics: 512 icon is apps/mobile/assets/icon.png
+  Feature graphic 1024x500
+  At least 2 phone screenshots
+• App content: privacy, ads, rating, data safety, target audience
+
+When internal test is clean:
+Production → Create release → use the same .aab (or a new build) → 100% rollout.
+
+Optional submit from CLI after the app exists:
+
+cd apps/mobile
+npx eas submit --platform android --profile production
+
+------------------------------------------------
+6. Run the app on a phone while developing
+------------------------------------------------
+cd apps/mobile
+pnpm start
+# then press a for Android emulator, or scan QR with Expo Go / dev client
+
+Need a real device build:
+
+cd apps/mobile
+pnpm android
+
+------------------------------------------------
+Look studio (hair/makeup overlay) stays on the website for now.
+The native app covers the member color, shop, quiz, and account flows.

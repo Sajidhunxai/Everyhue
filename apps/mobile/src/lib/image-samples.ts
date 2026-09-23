@@ -28,7 +28,11 @@ export async function samplesFromImageUri(uri: string): Promise<LabColor[]> {
   }
 
   const decoded = jpeg.decode(base64ToBytes(manipulated.base64), { useTArray: true });
-  const stats = statsFromRgbaGrid(decoded.data, decoded.width, decoded.height);
+  const pixels =
+    decoded.data instanceof Uint8Array
+      ? decoded.data
+      : Uint8Array.from(decoded.data as ArrayLike<number>);
+  const stats = statsFromRgbaGrid(pixels, decoded.width, decoded.height);
   assertValidPhoto(stats);
 
   const { r, g, b } = stats.centerRgb;

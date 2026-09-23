@@ -15,10 +15,23 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://www.asktheimageguru.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "505236505372-8g9ouj623fiv0ppamal3ffq6g0dprig7.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "505236505372-ju410i6i5gbf3n6i4fahfuhjkc1r3nov.apps.googleusercontent.com"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://www.asktheimageguru.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "505236505372-8g9ouj623fiv0ppamal3ffq6g0dprig7.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "505236505372-ju410i6i5gbf3n6i4fahfuhjkc1r3nov.apps.googleusercontent.com"
+      }
     }
   },
   "submit": {

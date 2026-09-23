@@ -388,6 +388,8 @@ export { shopForSeason, shopCategories, shopByHex, allShopItems } from "./shop";
 export { scoreHexAgainstPalette, scoreLookAgainstPalette } from "./palette-match";
 export { buildTryOnCatalog } from "./try-on";
 export { getFaceBodyTips, seasonFaceBodyNote } from "./face-body";
+export { RESULT_IMAGES, seasonFamily, seasonStory } from "./season-story";
+export type { SeasonFamily } from "./season-story";
 export { stylistReply, stylistReplyWithAi } from "./stylist-chat";
 export {
   STYLE_QUIZ_QUESTIONS,

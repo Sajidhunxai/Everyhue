@@ -549,7 +549,7 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/*"
                 hidden
                 disabled={busy}
                 onChange={(e) => void onPhoto(e.target.files?.[0] ?? null)}

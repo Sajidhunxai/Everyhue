@@ -133,7 +133,10 @@ async function getSegmenter() {
           outputConfidenceMasks: true,
         }),
       );
-    })();
+    })().catch((error) => {
+      segmenterPromise = null;
+      throw error;
+    });
   }
   return segmenterPromise;
 }
@@ -326,20 +329,20 @@ function landmarkFaceOk(lm: { x: number; y: number }[]) {
   }
   const bw = maxX - minX;
   const bh = maxY - minY;
-  if (bw < 0.12 || bh < 0.16) return false;
+  if (bw < 0.08 || bh < 0.1) return false;
   const area = bw * bh;
   const aspect = bw / bh;
-  return area >= 0.04 && aspect > 0.45 && aspect < 1.85;
+  return area >= 0.02 && aspect > 0.35 && aspect < 2.4;
 }
 
 function segmentedFaceOk(faceSkin: Float32Array, w: number, h: number) {
-  const coverage = maskCoverage(faceSkin, 0.4);
-  if (coverage < 0.03 || coverage > 0.62) return false;
+  const coverage = maskCoverage(faceSkin, 0.28);
+  if (coverage < 0.012 || coverage > 0.78) return false;
   const box = faceBox(faceSkin, w, h);
   if (!box) return false;
   const area = (box.bw * box.bh) / (w * h);
   const aspect = box.bw / box.bh;
-  return area >= 0.05 && aspect > 0.5 && aspect < 1.75;
+  return area >= 0.025 && aspect > 0.35 && aspect < 2.2;
 }
 
 function detectLandmarks(
@@ -537,6 +540,38 @@ function applyFaceLandmarks(lm: Landmark[], w: number, h: number, faceSkin: Floa
   };
 }
 
+function maxMask(a: Float32Array, b: Float32Array) {
+  const out = emptyMask(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] > b[i] ? a[i] : b[i];
+  return out;
+}
+
+function geometricPortraitMasks(w: number, h: number) {
+  const n = w * h;
+  const hair = emptyMask(n);
+  const lips = emptyMask(n);
+  const eyes = emptyMask(n);
+  const cheeks = emptyMask(n);
+  const jewelry = emptyMask(n);
+  const dress = emptyMask(n);
+  fillEllipse(hair, w, h, 0.5, 0.2, 0.36, 0.24, 0.95);
+  fillEllipse(eyes, w, h, 0.38, 0.4, 0.055, 0.028, 0.95);
+  fillEllipse(eyes, w, h, 0.62, 0.4, 0.055, 0.028, 0.95);
+  fillEllipse(lips, w, h, 0.5, 0.58, 0.09, 0.038, 0.92);
+  fillEllipse(cheeks, w, h, 0.36, 0.49, 0.07, 0.055, 0.5);
+  fillEllipse(cheeks, w, h, 0.64, 0.49, 0.07, 0.055, 0.5);
+  fillEllipse(jewelry, w, h, 0.22, 0.5, 0.04, 0.07, 0.7);
+  fillEllipse(jewelry, w, h, 0.78, 0.5, 0.04, 0.07, 0.7);
+  const y0 = Math.floor(h * 0.58);
+  for (let y = y0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const nx = (x / w - 0.5) / 0.38;
+      if (nx * nx < 1) dress[y * w + x] = 0.75;
+    }
+  }
+  return { hair, lips, eyes, cheeks, jewelry, dress };
+}
+
 let landmarkerPromise: Promise<import("@mediapipe/tasks-vision").FaceLandmarker | null> | null = null;
 
 async function getLandmarker() {
@@ -702,7 +737,6 @@ export async function dataUrlToImage(dataUrl: string) {
 }
 
 export async function buildTryOnMasks(image: HTMLImageElement, canvas: HTMLCanvasElement): Promise<TryOnMasks> {
-  const segmenter = await getSegmenter();
   const w = canvas.width;
   const h = canvas.height;
   const original = canvas.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, w, h).data;
@@ -711,47 +745,72 @@ export async function buildTryOnMasks(image: HTMLImageElement, canvas: HTMLCanva
   let faceSkin: Float32Array<ArrayBufferLike> = emptyMask(w * h);
   let dress: Float32Array<ArrayBufferLike> = emptyMask(w * h);
 
-  const seg = withQuietTfLite(() => {
-    try {
-      return segmenter.segment(canvas);
-    } catch {
-      return segmenter.segment(image);
+  try {
+    const segmenter = await getSegmenter();
+    const seg = withQuietTfLite(() => {
+      try {
+        return segmenter.segment(canvas);
+      } catch {
+        return segmenter.segment(image);
+      }
+    });
+    const cat = seg.categoryMask;
+    if (cat) {
+      const raw = cat.hasUint8Array()
+        ? Uint8Array.from(cat.getAsUint8Array())
+        : (() => {
+            const f = cat.getAsFloat32Array();
+            const data = new Uint8Array(cat.width * cat.height);
+            for (let i = 0; i < data.length; i++) data[i] = Math.round(f[i]);
+            return data;
+          })();
+      hair = upsampleCategory(raw, cat.width, cat.height, w, h, HAIR_CLASS);
+      faceSkin = upsampleCategory(raw, cat.width, cat.height, w, h, FACE_SKIN_CLASS);
+      dress = upsampleCategory(raw, cat.width, cat.height, w, h, CLOTHES_CLASS);
+      cat.close();
     }
-  });
-  const cat = seg.categoryMask;
-  if (cat) {
-    const raw = cat.hasUint8Array()
-      ? Uint8Array.from(cat.getAsUint8Array())
-      : (() => {
-          const f = cat.getAsFloat32Array();
-          const data = new Uint8Array(cat.width * cat.height);
-          for (let i = 0; i < data.length; i++) data[i] = Math.round(f[i]);
-          return data;
-        })();
-    hair = upsampleCategory(raw, cat.width, cat.height, w, h, HAIR_CLASS);
-    faceSkin = upsampleCategory(raw, cat.width, cat.height, w, h, FACE_SKIN_CLASS);
-    dress = upsampleCategory(raw, cat.width, cat.height, w, h, CLOTHES_CLASS);
-    cat.close();
-  }
-  const hairConf = seg.confidenceMasks?.[HAIR_CLASS];
-  if (hairConf) {
-    const conf = hairConf.hasFloat32Array()
-      ? Float32Array.from(hairConf.getAsFloat32Array())
-      : (() => {
-          const u = hairConf.getAsUint8Array();
-          const f = new Float32Array(u.length);
-          for (let i = 0; i < u.length; i++) f[i] = u[i] / 255;
-          return f;
-        })();
-    const up = upsampleFloat(conf, hairConf.width, hairConf.height, w, h);
-    for (let i = 0; i < hair.length; i++) hair[i] = Math.max(hair[i], up[i]);
-    hairConf.close();
+    const hairConf = seg.confidenceMasks?.[HAIR_CLASS];
+    if (hairConf) {
+      const conf = hairConf.hasFloat32Array()
+        ? Float32Array.from(hairConf.getAsFloat32Array())
+        : (() => {
+            const u = hairConf.getAsUint8Array();
+            const f = new Float32Array(u.length);
+            for (let i = 0; i < u.length; i++) f[i] = u[i] / 255;
+            return f;
+          })();
+      const up = upsampleFloat(conf, hairConf.width, hairConf.height, w, h);
+      for (let i = 0; i < hair.length; i++) hair[i] = Math.max(hair[i], up[i]);
+      hairConf.close();
+    }
+  } catch {
+    /* WASM/CDN can fail locally — still colorize with geometry below */
   }
 
   const landmarker = await getLandmarker();
   const lm = landmarker ? detectLandmarks(landmarker, canvas, image) : null;
-  const foundFace = landmarker ? Boolean(lm && landmarkFaceOk(lm)) : segmentedFaceOk(faceSkin, w, h);
-  if (!foundFace) throw new NoFaceError();
+  const foundFace =
+    Boolean(lm && landmarkFaceOk(lm)) ||
+    segmentedFaceOk(faceSkin, w, h) ||
+    maskCoverage(hair, 0.25) > 0.008 ||
+    maskCoverage(faceSkin, 0.22) > 0.012;
+
+  if (!foundFace) {
+    const geo = geometricPortraitMasks(w, h);
+    hair = maxMask(hair, geo.hair);
+    dress = maxMask(dress, geo.dress);
+    return {
+      width: w,
+      height: h,
+      original,
+      hair: blurMask(hair, w, h, 2),
+      lips: geo.lips,
+      eyes: geo.eyes,
+      cheeks: geo.cheeks,
+      jewelry: geo.jewelry,
+      dress: blurMask(dress, w, h, 2),
+    };
+  }
 
   hair = addHairHelmet(hair, faceSkin, original, w, h);
   hair = dilate(hair, w, h, 2);
@@ -764,17 +823,26 @@ export async function buildTryOnMasks(image: HTMLImageElement, canvas: HTMLCanva
 
   let makeup = makeupFromFace(faceSkin, w, h);
   if (lm && lm.length >= 140) makeup = applyFaceLandmarks(lm, w, h, faceSkin);
+  if (maskCoverage(makeup.eyes, 0.2) + maskCoverage(makeup.lips, 0.2) < 0.002) {
+    const geo = geometricPortraitMasks(w, h);
+    makeup = {
+      lips: maxMask(makeup.lips, geo.lips),
+      eyes: maxMask(makeup.eyes, geo.eyes),
+      cheeks: maxMask(makeup.cheeks, geo.cheeks),
+      jewelry: maxMask(makeup.jewelry, geo.jewelry),
+    };
+  }
 
   return {
     width: w,
     height: h,
-    original: Uint8ClampedArray.from(original),
-    hair: copyFloat(hair),
-    lips: copyFloat(makeup.lips),
-    eyes: copyFloat(makeup.eyes),
-    cheeks: copyFloat(makeup.cheeks),
-    jewelry: copyFloat(makeup.jewelry),
-    dress: copyFloat(dress),
+    original,
+    hair,
+    lips: makeup.lips,
+    eyes: makeup.eyes,
+    cheeks: makeup.cheeks,
+    jewelry: makeup.jewelry,
+    dress,
   };
 }
 

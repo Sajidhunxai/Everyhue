@@ -3,6 +3,10 @@ import { BrandLogo } from "@/components/brand-logo";
 import { TabIcon } from "@/components/tab-icon";
 import { theme } from "@/lib/theme";
 
+export const unstable_settings = {
+  initialRouteName: "index",
+};
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -13,7 +17,15 @@ export default function TabLayout() {
         headerTitleAlign: "center",
         headerShadowVisible: false,
         sceneStyle: { backgroundColor: theme.bg },
-        tabBarStyle: { backgroundColor: theme.bg, borderTopColor: theme.line },
+        tabBarLabelStyle: { fontFamily: "Manrope_600SemiBold", fontSize: 11 },
+        tabBarStyle: {
+          backgroundColor: theme.bg,
+          borderTopColor: theme.line,
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: 8,
+        },
+        tabBarIconStyle: { marginTop: 2 },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.muted,
       }}
@@ -22,65 +34,40 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="dashboard" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="dashboard" color={color} size={26} />,
         }}
       />
       <Tabs.Screen
         name="analyze"
         options={{
           title: "Analyze",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="analyze" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="compare"
-        options={{
-          title: "Compare",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="compare" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="analyze" color={color} size={26} />,
         }}
       />
       <Tabs.Screen
         name="shop"
         options={{
           title: "Shop",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="shop" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="shop" color={color} size={26} />,
         }}
       />
       <Tabs.Screen
         name="wardrobe"
         options={{
           title: "Wardrobe",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="wardrobe" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="wardrobe" color={color} size={26} />,
         }}
       />
       <Tabs.Screen
-        name="profiles"
+        name="more"
         options={{
-          title: "Family",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="family" color={color} size={size} />
-          ),
+          title: "More",
+          tabBarIcon: ({ color }) => <TabIcon name="more" color={color} size={26} />,
         }}
       />
-      <Tabs.Screen
-        name="stylist"
-        options={{
-          title: "Stylist",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="stylist" color={color} size={size} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="compare" options={{ href: null, title: "Compare" }} />
+      <Tabs.Screen name="profiles" options={{ href: null, title: "Family" }} />
+      <Tabs.Screen name="stylist" options={{ href: null, title: "Stylist" }} />
     </Tabs>
   );
 }

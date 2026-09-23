@@ -74,7 +74,7 @@ export function GoogleSignInButton({ busy, onBusyChange, onError }: Props) {
         msg.includes("12500")
       ) {
         onError(
-          "Google sign-in needs setup (test user + Android SHA-1). Use email below, or see GOOGLE_AUTH.md.",
+          "Google error 10: the Android OAuth client is missing this APK’s SHA-1 (test users are not enough). Desktop APK SHA-1: 5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25. Expo APK SHA-1: 7A:05:82:70:5A:FC:E9:73:E4:EC:06:DE:AA:D1:D8:C8:48:AA:68:DE. Package: com.asktheimageguru.everyhue. Put SHA-1 on an Android client, not the Web client.",
         );
       } else {
         onError(msg);

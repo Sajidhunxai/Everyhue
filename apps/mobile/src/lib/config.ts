@@ -1,6 +1,11 @@
+import Constants from "expo-constants";
+
+const PRODUCTION_API = "https://www.asktheimageguru.com";
+
 export function getApiBaseUrl(): string {
-  return (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const extra = Constants.expoConfig?.extra?.apiUrl as string | undefined;
+  if (extra?.trim()) return extra.replace(/\/$/, "");
+  return PRODUCTION_API;
 }

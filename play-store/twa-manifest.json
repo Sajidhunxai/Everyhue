@@ -1,0 +1,34 @@
+{
+  "packageId": "com.asktheimageguru.everyhue",
+  "host": "www.asktheimageguru.com",
+  "name": "Every Hue",
+  "launcherName": "Every Hue",
+  "display": "standalone",
+  "themeColor": "#12141A",
+  "themeColorDark": "#12141A",
+  "navigationColor": "#12141A",
+  "navigationColorDark": "#12141A",
+  "backgroundColor": "#12141A",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://www.asktheimageguru.com/icons/icon-512.png",
+  "maskableIconUrl": "https://www.asktheimageguru.com/icons/icon-512-maskable.png",
+  "shortcuts": [
+    {
+      "name": "Analyze my colors",
+      "shortName": "Analyze",
+      "url": "/analyze"
+    },
+    {
+      "name": "Style quiz",
+      "shortName": "Quiz",
+      "url": "/quiz"
+    },
+    {
+      "name": "Look studio",
+      "shortName": "Try on",
+      "url": "/try-on"
+    }
+  ],
+  "generatorApp": "bubblewrap"
+}

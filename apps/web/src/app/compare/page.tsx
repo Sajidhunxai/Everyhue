@@ -116,7 +116,7 @@ export default function ComparePage() {
           Photo A
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             onChange={(e) => setFileA(e.target.files?.[0] ?? null)}
           />
         </label>
@@ -124,7 +124,7 @@ export default function ComparePage() {
           Photo B
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             onChange={(e) => setFileB(e.target.files?.[0] ?? null)}
           />
         </label>

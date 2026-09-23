@@ -7,7 +7,7 @@
     "dev:web": "pnpm --filter @photomatcher/web dev",
     "dev:mobile": "pnpm --filter @photomatcher/mobile start",
     "dev:flutter": "cd apps/flutter && flutter run",
-    "build:apk": "pnpm --filter @photomatcher/mobile build:apk",
+    "build:aab": "pnpm --filter @photomatcher/mobile build:aab",
     "build:apk:local": "pnpm --filter @photomatcher/mobile build:apk:local",
     "build": "pnpm -r --filter=./packages/* build && pnpm --filter @photomatcher/web build",
     "test": "pnpm --filter @photomatcher/color-engine test",

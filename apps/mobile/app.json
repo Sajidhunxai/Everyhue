@@ -45,7 +45,8 @@
           "cameraPermission": "Every Hue uses the camera so you can capture a daylight face photo for color analysis.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -57,7 +58,8 @@
       "eas": {
         "projectId": "5555459a-b1b9-4398-9be8-19f4ad967faa"
       },
-      "privacyPolicyUrl": "https://asktheimageguru.com/privacy"
+      "apiUrl": "https://www.asktheimageguru.com",
+      "privacyPolicyUrl": "https://www.asktheimageguru.com/privacy"
     }
   }
 }

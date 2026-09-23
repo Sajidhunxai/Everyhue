@@ -126,54 +126,49 @@ export default function ResultsPage() {
 
   return (
     <section className="panel results-panel">
-      <p className="muted">Engine {result.engine_version}</p>
-      <h1>{result.seasonLabel}</h1>
-      <ResultsDisplay result={result} />
-      <div className="actions" style={{ marginTop: "1.5rem" }}>
-        <Link className="btn btn-primary" href="/shop">
-          Shop my palette
-        </Link>
-        <Link className="btn btn-primary" href="/beauty">
-          Makeup &amp; hair
-        </Link>
-        <Link className="btn btn-primary" href="/try-on">
-          Try hair &amp; eyes
-        </Link>
-        <Link className="btn btn-secondary" href="/match">
-          Match a color
-        </Link>
-        <Link className="btn btn-secondary" href="/looks">
-          Save a look
-        </Link>
-        <Link className="btn btn-secondary" href="/quiz">
-          Take style quiz
-        </Link>
-        <Link className="btn btn-secondary" href="/stylist">
-          Ask stylist
-        </Link>
-        <Link className="btn btn-secondary" href="/results/print">
-          Print / Save PDF
-        </Link>
-        <button className="btn btn-secondary" type="button" onClick={() => void shareCard()}>
-          Share style card
-        </button>
-        <button
-          className="btn btn-secondary"
-          type="button"
-          onClick={() =>
-            result.palette[0] &&
-            void saveToWardrobe(result.palette[0].hex, result.palette[0].name)
-          }
-        >
-          Save top color
-        </button>
-        <Link className="btn btn-secondary" href="/analyze">
-          Analyze again
-        </Link>
-        <Link className="btn btn-secondary" href="/history">
-          History
-        </Link>
-      </div>
+      <ResultsDisplay
+        result={result}
+        actions={
+          <div className="actions results-actions">
+            <Link className="btn btn-primary" href="/try-on">
+              Look studio
+            </Link>
+            <Link className="btn btn-primary" href="/beauty">
+              Makeup &amp; hair
+            </Link>
+            <Link className="btn btn-secondary" href="/shop">
+              Shop palette
+            </Link>
+            <Link className="btn btn-secondary" href="/match">
+              Match a color
+            </Link>
+            <Link className="btn btn-secondary" href="/quiz">
+              Style quiz
+            </Link>
+            <Link className="btn btn-secondary" href="/stylist">
+              Ask stylist
+            </Link>
+            <Link className="btn btn-secondary" href="/results/print">
+              Print / PDF
+            </Link>
+            <button className="btn btn-secondary" type="button" onClick={() => void shareCard()}>
+              Share
+            </button>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() =>
+                result.palette[0] && void saveToWardrobe(result.palette[0].hex, result.palette[0].name)
+              }
+            >
+              Save top color
+            </button>
+            <Link className="btn btn-secondary" href="/analyze">
+              Analyze again
+            </Link>
+          </div>
+        }
+      />
     </section>
   );
 }

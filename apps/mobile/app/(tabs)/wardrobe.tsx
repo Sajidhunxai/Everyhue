@@ -210,12 +210,12 @@ const styles = StyleSheet.create({
   kicker: {
     color: theme.primary,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    fontSize: 12,
-    fontWeight: "700",
+    letterSpacing: 1.6,
+    fontSize: 11,
+    fontFamily: "Manrope_700Bold",
   },
-  title: { color: theme.ink, fontSize: 26, fontWeight: "600", lineHeight: 32 },
-  lead: { color: theme.muted, lineHeight: 22, fontSize: 15 },
+  title: { color: theme.ink, fontSize: 28, fontFamily: "Fraunces_600SemiBold", lineHeight: 34 },
+  lead: { color: theme.muted, lineHeight: 22, fontSize: 15, fontFamily: "Manrope_400Regular" },
   sectionLabel: {
     color: theme.muted,
     textTransform: "uppercase",
@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     color: theme.ink,
     backgroundColor: "rgba(18,20,26,0.55)",
     fontSize: 16,
+    fontFamily: "Manrope_400Regular",
   },
   swatchRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   swatch: {
