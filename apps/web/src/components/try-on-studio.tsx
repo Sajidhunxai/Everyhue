@@ -47,6 +47,7 @@ type UndoEntry = { feature: StudioFeature; layer: Float32Array<ArrayBufferLike> 
 type Props = {
   catalog: TryOnCatalog;
   seasonLabel: string;
+  initialPhoto?: string | null;
 };
 
 function canvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number) {
@@ -61,7 +62,7 @@ function brushRadius(canvas: HTMLCanvasElement, size: number) {
   return Math.max(2, Math.min(canvas.width, canvas.height) * size);
 }
 
-export function TryOnStudio({ catalog, seasonLabel }: Props) {
+export function TryOnStudio({ catalog, seasonLabel, initialPhoto }: Props) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -265,7 +266,7 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
   }
 
   useEffect(() => {
-    const saved = loadLastPhoto();
+    const saved = initialPhoto || loadLastPhoto();
     if (!saved) {
       setUploadOpen(true);
       return;
@@ -283,7 +284,7 @@ export function TryOnStudio({ catalog, seasonLabel }: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialPhoto]);
 
   async function onPhoto(file: File | null) {
     if (!file) return;

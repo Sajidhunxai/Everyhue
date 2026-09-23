@@ -4,7 +4,6 @@ import * as ImagePicker from "expo-image-picker";
 import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-button";
 import { FadeIn } from "@/components/fade-in";
 import { Screen } from "@/components/screen";
@@ -77,17 +76,20 @@ export default function TryOnScreen() {
         <Text style={type.kicker}>{result.seasonLabel}</Text>
         <Text style={type.title}>Look studio</Text>
         <Text style={type.lead}>
-          AI recolors hair, eyes, lips, and clothes on your portrait. Pick a swatch — paint is only
-          for small touch-ups.
+          Same Look studio as the website: MediaPipe finds hair, eyes, lips, and clothes, then
+          recolors them. Pick a swatch after the face is found.
         </Text>
       </FadeIn>
       <AppButton variant="secondary" onPress={() => void pickPhoto()}>
         {photoUri ? "Change photo" : "Choose a portrait"}
       </AppButton>
       {photoUri ? (
-        <GestureHandlerRootView>
-          <TryOnStudio photoUri={photoUri} catalog={catalog} accessToken={accessToken} />
-        </GestureHandlerRootView>
+        <TryOnStudio
+          photoUri={photoUri}
+          catalog={catalog}
+          seasonLabel={result.seasonLabel}
+          accessToken={accessToken}
+        />
       ) : (
         <Text style={type.lead}>Choose the analysis portrait to start painting.</Text>
       )}

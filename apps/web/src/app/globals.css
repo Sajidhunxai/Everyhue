@@ -171,6 +171,27 @@ main {
   padding: 1.5rem var(--content-pad) 3rem;
 }
 
+body:has(.tryon-embed-root) .site-header,
+body:has(.tryon-embed-root) .site-footer {
+  display: none;
+}
+
+body:has(.tryon-embed-root) .site-main {
+  max-width: none;
+  padding: 0.75rem;
+}
+
+.tryon-embed-root {
+  min-height: 100vh;
+}
+
+.tryon-embed-root .panel {
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
 .site-main:has(.auth-main) {
   max-width: none;
   width: 100%;
