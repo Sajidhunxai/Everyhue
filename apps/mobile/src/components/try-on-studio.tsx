@@ -99,32 +99,28 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
       setError(null);
       void (async () => {
         try {
-          if (accessToken) {
+          const local = portraitRef.current;
+          if (local) {
+            const uri = await renderPortraitLook(local, look, enabled, stamp);
+            if (!cancelled && stamp === renderId.current) {
+              setPreviewUri(uri);
+              setUsedAi(false);
+              setError(null);
+              setBusy(false);
+            }
+          }
+          if (!accessToken || cancelled || stamp !== renderId.current) return;
+          try {
             const uri = await renderLookWithAi(accessToken, photoUri, look, enabled);
             if (!cancelled && stamp === renderId.current) {
               setPreviewUri(uri);
               setUsedAi(true);
-              return;
             }
+          } catch {
+            /* Keep the free on-device look if cloud AI is unpaid or down. */
           }
-          throw new Error("no-ai");
         } catch (e) {
-          if (cancelled || stamp !== renderId.current) return;
-          const local = portraitRef.current;
-          if (local) {
-            try {
-              const uri = await renderPortraitLook(local, look, enabled, stamp);
-              if (!cancelled && stamp === renderId.current) {
-                setPreviewUri(uri);
-                setUsedAi(false);
-                if (e instanceof Error && e.message !== "no-ai") setError(e.message);
-              }
-              return;
-            } catch {
-              /* fall through */
-            }
-          }
-          if (e instanceof Error && e.message !== "no-ai") setError(e.message);
+          if (!cancelled && stamp === renderId.current && e instanceof Error) setError(e.message);
         } finally {
           if (!cancelled && stamp === renderId.current) setBusy(false);
         }
@@ -228,8 +224,8 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Text style={styles.hint}>
         {usedAi
-          ? "AI recolored the real hair, irises, lips, and clothes — not a photo filter. Pick a swatch to try another look."
-          : "Using a local preview. Sign in and keep the API connected for full AI hair, eye, lip, and clothing changes."}
+          ? "Cloud AI recolored hair, eyes, lips, and clothes."
+          : "Free on-device look: hair, eyes, lips, and clothes change when you pick a swatch. No paid API required."}
       </Text>
 
       <View style={styles.row}>
