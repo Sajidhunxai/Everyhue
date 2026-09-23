@@ -1,4 +1,3 @@
-import { File } from "node:buffer";
 import type { TryOnFeature, TryOnLook } from "@photomatcher/types";
 
 export type TryOnEnabled = Record<TryOnFeature, boolean>;
@@ -97,13 +96,13 @@ async function editWithMultipart(
   fieldName: string,
 ) {
   const ext = mimeType.includes("png") ? "png" : "jpg";
-  const file = new File([Buffer.from(imageBytes)], `portrait.${ext}`, { type: mimeType });
+  const bytes = Uint8Array.from(imageBytes);
   const form = new FormData();
   form.set("model", model);
   form.set("prompt", prompt);
   form.set("size", "1024x1024");
   form.set("quality", "low");
-  form.append(fieldName, file);
+  form.append(fieldName, new Blob([bytes as BlobPart], { type: mimeType }), `portrait.${ext}`);
 
   const res = await fetch("https://api.openai.com/v1/images/edits", {
     method: "POST",
