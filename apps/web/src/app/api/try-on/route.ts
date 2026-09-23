@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireDbUser } from "@/lib/auth-user";
 import { rateLimit } from "@/lib/rate-limit";
-import { renderTryOnAi, TryOnAiError } from "@/lib/try-on-ai-server";
+import { renderTryOnAi, tryOnAiProviders, TryOnAiError } from "@/lib/try-on-ai-server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -36,6 +36,7 @@ function normalizeHex(hex: string) {
 export async function GET() {
   return NextResponse.json({
     ok: true,
+    ...tryOnAiProviders(),
     message: "Look studio is live. The phone app posts a photo here — opening this URL in a browser is not a try-on.",
   });
 }

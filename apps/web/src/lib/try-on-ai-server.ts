@@ -169,13 +169,35 @@ export async function renderTryOnWithOpenAi(
   throw new TryOnAiError(lastError);
 }
 
+function geminiMessage(payload: unknown, status: number) {
+  const body = payload as { error?: { message?: string; status?: string; code?: number } };
+  const text = body.error?.message || `Gemini image edit failed (${status})`;
+  if (/api key|api_key|unauthenticated|permission|forbidden|invalid/i.test(text)) {
+    return "Gemini rejected the API key. Check GEMINI_API_KEY on Vercel, enable the Generative Language API, then redeploy.";
+  }
+  if (/quota|resource.?exhausted|billing|limit/i.test(text)) {
+    return "Gemini quota or billing blocked image edits. Check usage in Google AI Studio.";
+  }
+  if (/not found|not supported|does not exist/i.test(text)) {
+    return "This Gemini key cannot use the image model. Create a Gemini API key in Google AI Studio (aistudio.google.com/apikey).";
+  }
+  return text.slice(0, 240);
+}
+
 function extractGeminiImage(payload: unknown): string | null {
   const root = payload as {
-    candidates?: { content?: { parts?: { inlineData?: { data?: string; mimeType?: string } }[] } }[];
+    candidates?: {
+      content?: {
+        parts?: {
+          inlineData?: { data?: string; mimeType?: string };
+          inline_data?: { data?: string; mime_type?: string };
+        }[];
+      };
+    }[];
   };
-  const part = root.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
-  const data = part?.inlineData?.data;
-  const mime = part?.inlineData?.mimeType || "image/png";
+  const part = root.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data || p.inline_data?.data);
+  const data = part?.inlineData?.data || part?.inline_data?.data;
+  const mime = part?.inlineData?.mimeType || part?.inline_data?.mime_type || "image/png";
   return data ? `data:${mime};base64,${data}` : null;
 }
 
@@ -186,16 +208,25 @@ export async function renderTryOnWithGemini(
   enabled: TryOnEnabled,
   apiKey: string,
 ) {
-  const models = ["gemini-2.5-flash-image", "gemini-2.0-flash-preview-image-generation"];
+  const models = [
+    "gemini-2.5-flash-image",
+    "gemini-2.5-flash-image-preview",
+    "gemini-3.1-flash-image",
+    "gemini-2.0-flash-preview-image-generation",
+  ];
   const prompt = buildTryOnPrompt(look, enabled);
   const b64 = Buffer.from(imageBytes).toString("base64");
+  let lastError = "Gemini could not edit that photo.";
 
   for (const model of models) {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify({
           contents: [
             {
@@ -210,11 +241,23 @@ export async function renderTryOnWithGemini(
         }),
       },
     );
-    if (!res.ok) continue;
-    const image = extractGeminiImage(await res.json());
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      lastError = geminiMessage(json, res.status);
+      continue;
+    }
+    const image = extractGeminiImage(json);
     if (image) return image;
+    lastError = "Gemini returned no image. Try a clearer face-forward photo.";
   }
-  return null;
+  throw new TryOnAiError(lastError);
+}
+
+export function tryOnAiProviders() {
+  return {
+    gemini: Boolean(process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim()),
+    openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
+  };
 }
 
 export async function renderTryOnAi(
@@ -227,15 +270,11 @@ export async function renderTryOnAi(
   const openai = process.env.OPENAI_API_KEY?.trim();
 
   if (!gemini && !openai) {
-    throw new TryOnAiError("No image AI key on the server. Add OPENAI_API_KEY on Vercel and redeploy.");
+    throw new TryOnAiError("No image AI key on the server. Add GEMINI_API_KEY on Vercel and redeploy.");
   }
 
   if (gemini) {
-    const image = await renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
-    if (image) return image;
+    return renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
   }
-  if (openai) {
-    return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai);
-  }
-  throw new TryOnAiError("Gemini image edit failed and no OpenAI key is set.");
+  return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai!);
 }
