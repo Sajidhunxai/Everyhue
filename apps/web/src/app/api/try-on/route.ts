@@ -33,6 +33,13 @@ function normalizeHex(hex: string) {
   return hex.startsWith("#") ? hex : `#${hex}`;
 }
 
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    message: "Look studio is live. The phone app posts a photo here — opening this URL in a browser is not a try-on.",
+  });
+}
+
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "anon";
   const rl = rateLimit(`try-on:${ip}`, 8, 60_000);
