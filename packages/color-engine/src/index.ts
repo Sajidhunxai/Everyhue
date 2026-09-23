@@ -387,6 +387,8 @@ export { comparePhotos } from "./compare";
 export { shopForSeason, shopCategories, shopByHex, allShopItems } from "./shop";
 export { scoreHexAgainstPalette, scoreLookAgainstPalette } from "./palette-match";
 export { buildTryOnCatalog } from "./try-on";
+export { colorizePortraitRgba } from "./try-on-pixels";
+export type { TryOnEnabled as TryOnPixelEnabled } from "./try-on-pixels";
 export { getFaceBodyTips, seasonFaceBodyNote } from "./face-body";
 export { RESULT_IMAGES, seasonFamily, seasonStory } from "./season-story";
 export type { SeasonFamily } from "./season-story";

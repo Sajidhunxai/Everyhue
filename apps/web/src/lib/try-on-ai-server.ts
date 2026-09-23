@@ -287,19 +287,19 @@ export async function renderTryOnAi(
 
   if (gemini) {
     try {
-      return await renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
+      return { image: await renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini), source: "gemini" as const };
     } catch {
       const fallback = local();
-      if (fallback) return fallback;
+      if (fallback) return { image: fallback, source: "local" as const };
       throw new TryOnAiError("Cloud look failed. Showing the on-device web look needs a JPEG portrait.");
     }
   }
 
   const fallback = local();
-  if (fallback) return fallback;
+  if (fallback) return { image: fallback, source: "local" as const };
 
   if (openai) {
-    return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai);
+    return { image: await renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai), source: "openai" as const };
   }
   throw new TryOnAiError("Could not apply the look. Use a JPEG face photo.");
 }

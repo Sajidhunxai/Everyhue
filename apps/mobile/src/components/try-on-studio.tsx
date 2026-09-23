@@ -226,7 +226,7 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
       <Text style={styles.hint}>
         {usedAi
           ? "Cloud AI recolored hair, eyes, lips, and clothes."
-          : "Same as the website: hair, eyes, lips, and clothes change on this photo. Cloud AI is optional."}
+          : "Hair, eyes, and lips are recolored on this photo, same as the website. Pick a swatch to see the change."}
       </Text>
 
       <View style={styles.row}>

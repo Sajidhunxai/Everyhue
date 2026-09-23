@@ -93,8 +93,8 @@ export async function POST(req: Request) {
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   try {
-    const image = await renderTryOnAi(bytes, file.type || "image/jpeg", look, enabledParsed.data);
-    return NextResponse.json({ image });
+    const result = await renderTryOnAi(bytes, file.type || "image/jpeg", look, enabledParsed.data);
+    return NextResponse.json(result);
   } catch (error) {
     const message =
       error instanceof TryOnAiError

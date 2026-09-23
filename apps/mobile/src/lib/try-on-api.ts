@@ -31,9 +31,16 @@ export async function renderLookWithAi(
     body: form,
   });
 
-  const payload = (await res.json().catch(() => ({}))) as { image?: string; error?: string };
+  const payload = (await res.json().catch(() => ({}))) as {
+    image?: string;
+    source?: "gemini" | "openai" | "local";
+    error?: string;
+  };
   if (!res.ok || !payload.image) {
     throw new Error(payload.error || "Could not apply the AI look");
+  }
+  if (payload.source === "local") {
+    throw new Error("LOCAL_FALLBACK");
   }
 
   const match = payload.image.match(/^data:image\/\w+;base64,(.+)$/);
