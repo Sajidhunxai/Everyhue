@@ -1,4 +1,5 @@
 import type { TryOnFeature, TryOnLook } from "@photomatcher/types";
+import { renderTryOnLocal } from "@/lib/try-on-local";
 
 export type TryOnEnabled = Record<TryOnFeature, boolean>;
 
@@ -171,17 +172,28 @@ export async function renderTryOnWithOpenAi(
 
 function geminiMessage(payload: unknown, status: number) {
   const body = payload as { error?: { message?: string; status?: string; code?: number } };
+  const statusName = body.error?.status || "";
   const text = body.error?.message || `Gemini image edit failed (${status})`;
-  if (/api key|api_key|unauthenticated|permission|forbidden|invalid/i.test(text)) {
-    return "Gemini rejected the API key. Check GEMINI_API_KEY on Vercel, enable the Generative Language API, then redeploy.";
+  if (status === 429 || /RESOURCE_EXHAUSTED/i.test(statusName) || /quota|billing|rate.?limit/i.test(text)) {
+    return "Gemini image models need billing on this project. In Google AI Studio open API keys → everyhue → Set up billing, then wait a few minutes and try again.";
   }
-  if (/quota|resource.?exhausted|billing|limit/i.test(text)) {
-    return "Gemini quota or billing blocked image edits. Check usage in Google AI Studio.";
+  if (/api key|api_key|unauthenticated|permission|forbidden|invalid/i.test(text) && !/not found|not supported/i.test(text)) {
+    return "Gemini rejected the API key. Check GEMINI_API_KEY on Vercel and redeploy.";
   }
   if (/not found|not supported|does not exist/i.test(text)) {
-    return "This Gemini key cannot use the image model. Create a Gemini API key in Google AI Studio (aistudio.google.com/apikey).";
+    return "Gemini image model is not available on this key yet. Keep the current key and enable billing in AI Studio.";
   }
   return text.slice(0, 240);
+}
+
+function preferGeminiError(current: string, next: string) {
+  const rank = (msg: string) => {
+    if (/need billing|quota|billing/i.test(msg)) return 3;
+    if (/rejected the API key/i.test(msg)) return 2;
+    if (/not available|not found/i.test(msg)) return 1;
+    return 0;
+  };
+  return rank(next) >= rank(current) ? next : current;
 }
 
 function extractGeminiImage(payload: unknown): string | null {
@@ -209,10 +221,11 @@ export async function renderTryOnWithGemini(
   apiKey: string,
 ) {
   const models = [
-    "gemini-2.5-flash-image",
-    "gemini-2.5-flash-image-preview",
+    "gemini-3.1-flash-image-preview",
     "gemini-3.1-flash-image",
-    "gemini-2.0-flash-preview-image-generation",
+    "gemini-2.5-flash-image",
+    "gemini-3.1-flash-lite-image",
+    "gemini-3-pro-image-preview",
   ];
   const prompt = buildTryOnPrompt(look, enabled);
   const b64 = Buffer.from(imageBytes).toString("base64");
@@ -243,7 +256,7 @@ export async function renderTryOnWithGemini(
     );
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      lastError = geminiMessage(json, res.status);
+      lastError = preferGeminiError(lastError, geminiMessage(json, res.status));
       continue;
     }
     const image = extractGeminiImage(json);
@@ -257,6 +270,7 @@ export function tryOnAiProviders() {
   return {
     gemini: Boolean(process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim()),
     openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    local: true,
   };
 }
 
@@ -269,12 +283,23 @@ export async function renderTryOnAi(
   const gemini = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
   const openai = process.env.OPENAI_API_KEY?.trim();
 
-  if (!gemini && !openai) {
-    throw new TryOnAiError("No image AI key on the server. Add GEMINI_API_KEY on Vercel and redeploy.");
-  }
+  const local = () => renderTryOnLocal(imageBytes, mimeType, look, enabled);
 
   if (gemini) {
-    return renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
+    try {
+      return await renderTryOnWithGemini(imageBytes, mimeType, look, enabled, gemini);
+    } catch {
+      const fallback = local();
+      if (fallback) return fallback;
+      throw new TryOnAiError("Cloud look failed. Showing the on-device web look needs a JPEG portrait.");
+    }
   }
-  return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai!);
+
+  const fallback = local();
+  if (fallback) return fallback;
+
+  if (openai) {
+    return renderTryOnWithOpenAi(imageBytes, mimeType, look, enabled, openai);
+  }
+  throw new TryOnAiError("Could not apply the look. Use a JPEG face photo.");
 }

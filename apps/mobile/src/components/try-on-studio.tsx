@@ -115,9 +115,10 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
             if (!cancelled && stamp === renderId.current) {
               setPreviewUri(uri);
               setUsedAi(true);
+              setError(null);
             }
           } catch {
-            /* Keep the free on-device look if cloud AI is unpaid or down. */
+            /* Keep the same local recolor the website uses when Gemini is unpaid. */
           }
         } catch (e) {
           if (!cancelled && stamp === renderId.current && e instanceof Error) setError(e.message);
@@ -216,7 +217,7 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
         {busy ? (
           <View style={styles.loading}>
             <ActivityIndicator color={theme.primary} />
-            <Text style={styles.loadingText}>AI is recoloring hair, eyes, lips, and clothes…</Text>
+            <Text style={styles.loadingText}>Applying hair, eyes, lips, and clothes…</Text>
           </View>
         ) : null}
       </View>
@@ -225,7 +226,7 @@ export function TryOnStudio({ photoUri, catalog, accessToken }: Props) {
       <Text style={styles.hint}>
         {usedAi
           ? "Cloud AI recolored hair, eyes, lips, and clothes."
-          : "Free on-device look: hair, eyes, lips, and clothes change when you pick a swatch. No paid API required."}
+          : "Same as the website: hair, eyes, lips, and clothes change on this photo. Cloud AI is optional."}
       </Text>
 
       <View style={styles.row}>
